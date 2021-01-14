@@ -1,8 +1,8 @@
-#==========================================================
+#=========================================================
 #
 #  This prepare the hdf5 datasets of the DRIVE database
 #
-#============================================================
+#=========================================================
 
 import os
 import h5py,cv2,imageio
@@ -28,13 +28,13 @@ def write_hdf5(arr,outfile):
 
 #------------Path of the images --------------------------------------------------------------
 #train
-original_imgs_train = "./data/DRIVE/training/images/"
-groundTruth_imgs_train = "./data/DRIVE/training/1st_manual/"
-borderMasks_imgs_train = "./data/DRIVE/training/mask/"
+original_imgs_train = "../data/DRIVE/training/images/"
+groundTruth_imgs_train = "../data/DRIVE/training/1st_manual/"
+borderMasks_imgs_train = "../data/DRIVE/training/mask/"
 #test
-original_imgs_test = "./data/DRIVE/test/images/"
-groundTruth_imgs_test = "./data/DRIVE/test/1st_manual/"
-borderMasks_imgs_test = "./data/DRIVE/test/mask/"
+original_imgs_test = "../data/DRIVE/test/images/"
+groundTruth_imgs_test = "../data/DRIVE/test/1st_manual/"
+borderMasks_imgs_test = "../data/DRIVE/test/mask/"
 #---------------------------------------------------------------------------------------------
 
 Nimgs = 20

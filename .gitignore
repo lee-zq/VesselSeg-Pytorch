@@ -1,8 +1,8 @@
 # mp options 
 data/
-!/data/readme.md
+!/data/README.md
 experiments/
-!experiments/readme.md
+!experiments/README.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

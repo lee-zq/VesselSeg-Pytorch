@@ -5,32 +5,26 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # in/out
-    parser.add_argument('--outf', default='./output/', help='trained model will be saved at here')
-    parser.add_argument('--save','-n',default=None, help='save path name')
+    parser.add_argument('--outf', default='../experiments/', help='trained model will be saved at here')
+    parser.add_argument('--save',default='test', help='save path name')
     # parser.add_argument('--model', '-m', default='untitled')
     # parser.add_argument('--dataset', default="DRIVE", help='dataset name')
     # parser.add_argument('--aug', default=True, type=bool,help='augment dataset(已实现,内置) ')
 
     # data
-    parser.add_argument('--path_data',default='./data/DRIVE_data/')
-
-    parser.add_argument('--train_img', default='imgs_train.hdf5')
-    parser.add_argument('--train_gt', default='groundTruth_train.hdf5')
-    parser.add_argument('--train_mask', default='borderMasks_train.hdf5')
+    parser.add_argument('--train_data_path_list',default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
 
     # parser.add_argument('--val_img', default='imgs_val.hdf5')
     # parser.add_argument('--val_gt', default='groundTruth_val.hdf5')
     # parser.add_argument('--val_mask', default='borderMasks_val.hdf5')
 
-    parser.add_argument('--test_img', default='imgs_test.hdf5')
-    parser.add_argument('--test_gt', default='groundTruth_test.hdf5')
-    parser.add_argument('--test_mask', default='borderMasks_test.hdf5')
+    parser.add_argument('--test_data_path_list', default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
 
     parser.add_argument('--patch_height', default=48)
     parser.add_argument('--patch_width', default=48)
     parser.add_argument('--N_subimgs', default=100000)
     parser.add_argument('--inside_FOV', default=False)
-    parser.add_argument('--val_portion',default=0.0001)
+    parser.add_argument('--val_portion',default=0.1)
     # model parameters
     parser.add_argument('--in_channels', default=1, type=int,help='input channels')
     parser.add_argument('--classes', default=2, type=int,help='output channels')

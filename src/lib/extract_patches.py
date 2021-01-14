@@ -2,27 +2,25 @@ import numpy as np
 import random
 import configparser
 
-from .help_functions import load_hdf5
 from .help_functions import visualize
 from .help_functions import group_images
-
+from .common import readImg
 from .pre_processing import my_PreProc
 
 
 #To select the same images
-# random.seed(10)
+# random.seed(10
 
 #Load the original data and return the extracted patches for training/testing
-def get_data_training(DRIVE_train_imgs_original,
-                      DRIVE_train_groudTruth,
+def get_data_training(data_path_list,
                       patch_height,
                       patch_width,
                       N_subimgs,
                       inside_FOV):
-    train_imgs_original = load_hdf5(DRIVE_train_imgs_original)
-    train_masks = load_hdf5(DRIVE_train_groudTruth) # masks always the same
+    # train_imgs_original = load_hdf5(DRIVE_train_imgs_original)
+    # train_masks = load_hdf5(DRIVE_train_groudTruth) # masks always the same
+    train_imgs_original, train_masks, _ = load_hdf5(data_path_list)
     # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
-
 
     train_imgs = my_PreProc(train_imgs_original)
     train_masks = train_masks/255.
@@ -79,8 +77,6 @@ def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_te
     print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
 
     return patches_imgs_test, patches_masks_test
-
-
 
 
 # Load the original data and return the extracted patches for testing
@@ -381,3 +377,50 @@ def inside_FOV_DRIVE(i, x, y, DRIVE_masks):
         return True
     else:
         return False
+
+def load_file_path_txt(file_path):
+    img_list = []
+    gt_list = []
+    fov_list = []
+    with open(file_path, 'r') as file_to_read:
+        while True:
+            lines = file_to_read.readline().strip()  # 整行读取数据
+            if not lines:
+                break
+                pass
+            img,gt,fov = lines.split(' ')
+            img_list.append(img)
+            gt_list.append(gt)
+            fov_list.append(fov)
+    return img_list,gt_list,fov_list
+
+def load_hdf5(data_path_list_file):
+    img_list, gt_list, fov_list = load_file_path_txt(data_path_list_file)
+    imgs = None
+    groundTruth = None
+    border_masks = None
+    for i in range(len(img_list)): #list all files, directories in the path
+            #original
+            img = np.asarray(readImg(img_list[i]))
+            gt = np.asarray(readImg(gt_list[i]))
+            if len(gt.shape)==3:
+                gt = gt[:,:,0]
+            fov = np.asarray(readImg(fov_list[i]))
+            if len(fov.shape)==3:
+                fov = fov[:,:,0]
+
+            imgs = np.expand_dims(img,0) if imgs is None else np.concatenate((imgs,np.expand_dims(img,0)))
+            groundTruth = np.expand_dims(gt,0) if groundTruth is None else np.concatenate((groundTruth,np.expand_dims(gt,0)))
+            border_masks = np.expand_dims(fov,0) if border_masks is None else np.concatenate((border_masks,np.expand_dims(fov,0)))
+    
+    print("imgs max: " +str(np.max(imgs)))
+    print("imgs min: " +str(np.min(imgs)))
+    assert(np.max(groundTruth)==255 and np.max(border_masks)==255)
+    assert(np.min(groundTruth)==0 and np.min(border_masks)==0)
+    print("ground truth and border masks are correctly withih pixel value range 0-255 (black-white)")
+    #reshaping for my standard tensors
+    imgs = np.transpose(imgs,(0,3,1,2))
+    groundTruth = np.expand_dims(groundTruth,1)
+    border_masks = np.expand_dims(border_masks,1)
+    print('data shape:',imgs.shape,groundTruth.shape,border_masks.shape)
+    return imgs, groundTruth, border_masks

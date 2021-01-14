@@ -2,6 +2,7 @@ import numpy as np
 import os,joblib
 import torch,random
 import torch.nn as nn
+import cv2,imageio
 
 def readImg(im_fn):
     im = cv2.imread(im_fn)

@@ -16,7 +16,7 @@ from lib.extract_patches import get_data_testing_overlap
 # pre_processing.py
 from lib.pre_processing import my_PreProc
 from os.path import join
-from dataset.dataset import TestDataset
+from lib.dataset.dataset import TestDataset
 import matplotlib.pylab as pylab
 from lib.metrics import Evaluate
 import models

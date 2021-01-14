@@ -10,19 +10,18 @@ from lib.losses.loss import *
 from lib.losses.lovasz_loss import lovasz_with_softmax
 from lib.help_functions import *
 from lib.common import *
-from dataset.dataset import TrainDataset,TestDataset
+from lib.dataset.dataset import TrainDataset,TestDataset
 from config import parse_args
 from lib.logger import Logger, Print_Logger
 from collections import OrderedDict
 from lib.metrics import Evaluate
 import models
-from val_on_test import Val_on_testSet
+from lib.val_on_test import Val_on_testSet
 #  Load the data and divided in patches
 
 def get_dataloader(args):
     patches_imgs_train, patches_masks_train = get_data_training(
-        DRIVE_train_imgs_original = args.path_data + args.train_img,
-        DRIVE_train_groudTruth = args.path_data + args.train_gt,
+        data_path_list = args.train_data_path_list,
         patch_height = args.patch_height,
         patch_width = args.patch_width,
         N_subimgs = args.N_subimgs,
@@ -73,7 +72,7 @@ def val(val_loader,net,criterion,device):
     evaluater = Evaluate()
     with torch.no_grad():
 
-        for batch_idx, (inputs, targets) in tqdm(enumerate(val_loader), total=len(train_loader)):
+        for batch_idx, (inputs, targets) in tqdm(enumerate(val_loader), total=len(val_loader)):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
             loss = criterion(outputs, targets)
@@ -94,7 +93,6 @@ def main():
     setpu_seed(2020)
     
     args = parse_args()
-    # args.save = None
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
     cudnn.benchmark = True
@@ -106,7 +104,7 @@ def main():
     # net = models.LadderNetv6(inplanes=1,num_classes=2, layers=3, filters=6)
     # net = models.Dense_Unet(in_chan=1,out_chan=2,filters=64)
     # net = models.UNetFamily.R2AttU_Net(1,2)
-    net = models.LiNetv17(inplanes=1, num_classes=2, layers=3, filters=16)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16)
     print("Total number of parameters: " + str(count_parameters(net)))
     net.to(device)
     # torch.nn.init.kaiming_normal(net, mode='fan_out')      # 修改默认初始化方法
@@ -138,15 +136,15 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
         args.start_epoch = checkpoint['epoch']+1
 
-    eval_tool = Val_on_testSet(args)
+    # eval_tool = Val_on_testSet(args)
     for epoch in range(args.start_epoch,args.N_epochs+1):
         train_loader, val_loader = get_dataloader(args)        
         print('\nEPOCH: %d/%d --(learn_rate:%.6f)' % ((epoch), args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr']))
 
         train_log = train(train_loader,net,criterion, optimizer,device)
-        # val_log = val(val_loader,net,criterion,device)
-        eval_tool.inference(net)
-        val_log = eval_tool.evaluate()
+        val_log = val(val_loader,net,criterion,device)
+        # eval_tool.inference(net)
+        # val_log = eval_tool.evaluate()
         log.update(epoch,train_log,val_log)
         
         lr_scheduler.step()

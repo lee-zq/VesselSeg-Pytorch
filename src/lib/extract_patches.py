@@ -25,7 +25,7 @@ def get_data_train(data_path_list,
     train_imgs = train_imgs[:,:,9:-9,9:-9]  # cut bottom and top so now it is 565*565
     train_masks = train_masks[:,:,9:-9,9:-9]  # 针对不同的数据集，建议改变这里的crop范围或者去掉裁剪亦可
 
-    data_consistency_check(train_imgs,train_masks)  # 检查维度是否正确
+    data_dim_check(train_imgs,train_masks)  # 检查维度是否正确
     assert(np.min(train_masks)==0 and np.max(train_masks)==1)
     assert(np.min(train_FOVs)==0 and np.max(train_FOVs)==1)
     #check masks are within 0-1
@@ -34,7 +34,7 @@ def get_data_train(data_path_list,
 
     #extract the TRAINING patches from the full images
     patches_imgs_train, patches_masks_train = extract_random(train_imgs,train_masks,train_FOVs,patch_height,patch_width,N_patches,inside_FOV)
-    data_consistency_check(patches_imgs_train, patches_masks_train)
+    data_dim_check(patches_imgs_train, patches_masks_train)
 
     print("train PATCHES images/masks shape: ",patches_imgs_train.shape)
     print("train PATCHES images range (min-max): " +str(np.min(patches_imgs_train)) +' - '+str(np.max(patches_imgs_train)))
@@ -62,7 +62,7 @@ def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, i
             y_center = random.randint(0+int(patch_h/2),img_h-int(patch_h/2))
             #check whether the patch is fully contained in the FOV
             if inside==True:
-                if not is_patch_inside_FOV(x_center,y_center,full_FOVs[i,0],patch_h,patch_w,mode='all'):
+                if not is_patch_inside_FOV(x_center,y_center,full_FOVs[i,0],patch_h,patch_w,mode='center'):
                     continue
             patch = full_imgs[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
             patch_mask = full_masks[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
@@ -85,7 +85,7 @@ def is_patch_inside_FOV(x,y,fov_img,patch_h,patch_w,mode):
         raise ValueError("mode is incurrent!")
 
 #data consinstency check
-def data_consistency_check(imgs,masks):
+def data_dim_check(imgs,masks):
     assert(len(imgs.shape)==len(masks.shape))
     assert(imgs.shape[0]==masks.shape[0])
     assert(imgs.shape[2]==masks.shape[2])
@@ -102,6 +102,7 @@ def get_data_test_overlap(test_data_path_list, patch_height, patch_width, stride
 
     test_imgs = my_PreProc(test_imgs_original)
     test_masks = test_masks/255.
+    test_FOVs = test_FOVs//255
     #extend both images and masks so they can be divided exactly by the patches dimensions
     test_imgs = paint_border_overlap(test_imgs, patch_height, patch_width, stride_height, stride_width)
 
@@ -180,9 +181,9 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     N_patches_h = (img_h-patch_h)//stride_h+1
     N_patches_w = (img_w-patch_w)//stride_w+1
     N_patches_img = N_patches_h * N_patches_w
-    print("N_patches_h: " +str(N_patches_h))
-    print("N_patches_w: " +str(N_patches_w))
-    print("N_patches_img: " +str(N_patches_img))
+    print("N_patches_h: " + str(N_patches_h))
+    print("N_patches_w: " + str(N_patches_w))
+    print("N_patches_img: " + str(N_patches_img))
     assert (preds.shape[0]%N_patches_img==0)
     N_full_imgs = preds.shape[0]//N_patches_img
     print("According to the dimension inserted, there are " +str(N_full_imgs) +" full images (of " +str(img_h)+"x" +str(img_w) +" each)")
@@ -205,12 +206,9 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     return final_avg
 
 #return only the pixels contained in the FOV, for both images and masks
-def pred_only_FOV(data_imgs,data_masks,original_imgs_border_masks):
+def pred_only_in_FOV(data_imgs,data_masks,original_imgs_border_masks):
     assert (len(data_imgs.shape)==4 and len(data_masks.shape)==4)  #4D arrays
-    assert (data_imgs.shape[0]==data_masks.shape[0])
-    assert (data_imgs.shape[2]==data_masks.shape[2])
-    assert (data_imgs.shape[3]==data_masks.shape[3])
-    assert (data_imgs.shape[1]==1 and data_masks.shape[1]==1)  #check the channel is 1
+
     height = data_imgs.shape[2]
     width = data_imgs.shape[3]
     new_pred_imgs = []
@@ -218,7 +216,7 @@ def pred_only_FOV(data_imgs,data_masks,original_imgs_border_masks):
     for i in range(data_imgs.shape[0]):  #loop over the full images
         for x in range(width):
             for y in range(height):
-                if inside_FOV_DRIVE(i,x,y,original_imgs_border_masks)==True:
+                if pixel_inside_FOV(i,x,y,original_imgs_border_masks):
                     new_pred_imgs.append(data_imgs[i,:,y,x])
                     new_pred_masks.append(data_masks[i,:,y,x])
     new_pred_imgs = np.asarray(new_pred_imgs)
@@ -234,24 +232,19 @@ def kill_border(data, original_imgs_border_masks):
     for i in range(data.shape[0]):  #loop over the full images
         for x in range(width):
             for y in range(height):
-                if inside_FOV_DRIVE(i,x,y,original_imgs_border_masks)==False:
+                if not pixel_inside_FOV(i,x,y,original_imgs_border_masks):
                     data[i,:,y,x]=0.0
 
-
-def inside_FOV_DRIVE(i, x, y, DRIVE_masks):
-    assert (len(DRIVE_masks.shape)==4)  #4D arrays
-    assert (DRIVE_masks.shape[1]==1)  #DRIVE masks is black and white
+# function to judge pixel(x,y) in FOV or not
+def pixel_inside_FOV(i, x, y, FOVs):
+    assert (len(FOVs.shape)==4)  #4D arrays
+    assert (FOVs.shape[1]==1)  #DRIVE masks is black and white
     # DRIVE_masks = DRIVE_masks/255.  #NOOO!! otherwise with float numbers takes forever!!
-
-    if (x >= DRIVE_masks.shape[3] or y >= DRIVE_masks.shape[2]): #my image bigger than the original
+    if (x >= FOVs.shape[3] or y >= FOVs.shape[2]): #my image bigger than the original
         return False
+    return FOVs[i,0,y,x]>0 #0==black pixels
 
-    if (DRIVE_masks[i,0,y,x]>0):  #0==black pixels
-        # print DRIVE_masks[i,0,y,x]  #verify it is working right
-        return True
-    else:
-        return False
-
+#---------------------load data path list-------------------------------------
 def load_file_path_txt(file_path):
     img_list = []
     gt_list = []
@@ -261,7 +254,6 @@ def load_file_path_txt(file_path):
             lines = file_to_read.readline().strip()  # 整行读取数据
             if not lines:
                 break
-                pass
             img,gt,fov = lines.split(' ')
             img_list.append(img)
             gt_list.append(gt)

@@ -10,7 +10,7 @@ import os
 import argparse
 from lib.logger import Logger, Print_Logger
 # extract_patches.py
-from lib.extract_patches import recompone_overlap, kill_border, pred_only_FOV, get_data_test_overlap
+from lib.extract_patches import recompone_overlap, kill_border, pred_only_in_FOV, get_data_test_overlap
 # pre_processing.py
 from os.path import join
 from lib.dataset import TestDataset
@@ -22,13 +22,12 @@ from lib.pre_processing import my_PreProc
 
 setpu_seed(2020)
 class Test_on_testSet():
-    #====================extract test parameters===================
     def __init__(self,args):
         self.args = args
         assert (args.stride_height <= args.patch_height and args.stride_width <= args.patch_width)
         # save path
         self.path_experiment = args.outf + args.save +'/'
-        #============ Load the data and divide in patches=================================
+
         self.patches_imgs_test, self.test_imgs, self.test_masks, self.test_FOVs, self.new_height, self.new_width = get_data_test_overlap(
             test_data_path_list = args.test_data_path_list,
             patch_height = args.patch_height,
@@ -61,42 +60,30 @@ class Test_on_testSet():
 
     def evaluate(self):
         #========== Elaborate and visualize the predicted images ====================
-        pred_imgs = recompone_overlap(self.pred_patches, self.new_height, self.new_width, self.args.stride_height, self.args.stride_width)# predictions
-        orig_imgs = my_PreProc(self.test_imgs)     #originals
-        gtruth_masks = self.test_masks
-
-        kill_border(pred_imgs, self.test_FOVs)  #DRIVE MASK  #only for visualization
+        self.pred_imgs = recompone_overlap(self.pred_patches, self.new_height, self.new_width, self.args.stride_height, self.args.stride_width)# predictions
         ## back to original dimensions
-        pred_imgs = pred_imgs[:,:,0:self.img_height,0:self.img_width]
-        ######################保存结果图########
-        self.save_img_path = join(self.path_experiment,'result_img')
-        if not os.path.exists(join(self.save_img_path)):
-            os.makedirs(self.save_img_path)
+        self.pred_imgs = self.pred_imgs[:,:,0:self.img_height,0:self.img_width]
 
-        N_predicted = orig_imgs.shape[0]
-        group = 1
-        assert (N_predicted%group==0)
-        for i in range(int(N_predicted/group)):
-            orig_stripe = group_images(orig_imgs[i*group:(i*group)+group,:,:,:],group)  # 原图
-            masks_stripe = group_images(gtruth_masks[i*group:(i*group)+group,:,:,:],group) # GT
-            pred_stripe = group_images(pred_imgs[i*group:(i*group)+group,:,:,:],group)  # 预测概率图
-            binary = copy.deepcopy(pred_stripe)
-            binary[binary>=0.5]=1
-            binary[binary<0.5]=0  # 预测二值图
-            total_img = np.concatenate((orig_stripe,pred_stripe,binary,masks_stripe),axis=1)   # 拼接
-            visualize(total_img,self.save_img_path +"/Original_GroundTruth_Prediction"+str(i))#.show()
-        ######################
         #predictions only inside the FOV
-        y_scores, y_true = pred_only_FOV(pred_imgs,self.test_masks, self.test_FOVs)  #returns data only inside the FOV
+        y_scores, y_true = pred_only_in_FOV(self.pred_imgs,self.test_masks, self.test_FOVs)  #returns data only inside the FOV
         eval = Evaluate(save_path=self.path_experiment)
         eval.add_batch(y_true,y_scores)
-        # log = OrderedDict([('val_auc_roc', eval.auc_roc()), ('val_f1', eval.f1_score())])
         log = eval.save_all_result(plot_curve=True)
-
-        # save labels and probs
+        # save labels and probs for plot ROC and PR curve when k-fold Cross-validation
         np.save('{}result.npy'.format(self.path_experiment),np.asarray([y_true,y_scores]))
 
         return dict_round(log,6)
+
+    #保存结果图
+    def save_segmentation_result(self):
+        kill_border(self.pred_imgs, self.test_FOVs) # only for visualization
+        self.save_img_path = join(self.path_experiment,'result_img')
+        if not os.path.exists(join(self.save_img_path)):
+            os.makedirs(self.save_img_path)
+        # self.test_imgs = my_PreProc(self.test_imgs)
+        for i in range(self.test_imgs.shape[0]):
+            total_img = concat_result(self.test_imgs[i],self.pred_imgs[i],self.test_masks[i])
+            visualize(total_img,self.save_img_path +"/Original_GroundTruth_Prediction"+str(i))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -129,3 +116,4 @@ if __name__ == '__main__':
     eval = Test_on_testSet(args)
     eval.inference(net)
     print(eval.evaluate())
+    eval.save_segmentation_result()

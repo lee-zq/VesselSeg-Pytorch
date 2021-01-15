@@ -17,9 +17,7 @@ def get_data_training(data_path_list,
                       patch_width,
                       N_subimgs,
                       inside_FOV):
-    # train_imgs_original = load_hdf5(DRIVE_train_imgs_original)
-    # train_masks = load_hdf5(DRIVE_train_groudTruth) # masks always the same
-    train_imgs_original, train_masks, _ = load_hdf5(data_path_list)
+    train_imgs_original, train_masks, _ = load_data(data_path_list)
     # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
 
     train_imgs = my_PreProc(train_imgs_original)
@@ -47,17 +45,14 @@ def get_data_training(data_path_list,
 
 
 # Load the original data and return the extracted patches for training/testing
-def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_test, patch_height, patch_width):
+def get_data_testing(test_data_path_list, patch_height, patch_width):
     ### test
-    test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
-    test_masks = load_hdf5(DRIVE_test_groudTruth)
+    test_imgs_original, test_masks, boder_mask = load_data(test_data_path_list)
 
     test_imgs = my_PreProc(test_imgs_original)
     test_masks = test_masks/255.
 
     # extend both images and masks so they can be divided exactly by the patches dimensions
-    test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
-    test_masks = test_masks[0:Imgs_to_test,:,:,:]
     test_imgs = paint_border(test_imgs,patch_height,patch_width)
     test_masks = paint_border(test_masks,patch_height,patch_width)
 
@@ -76,21 +71,18 @@ def get_data_testing(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_te
     print("test PATCHES images/masks shape: "+patches_imgs_test.shape)
     print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
 
-    return patches_imgs_test, patches_masks_test
+    return patches_imgs_test, test_imgs_original, patches_masks_test, test_mask, boder_mask
 
 
 # Load the original data and return the extracted patches for testing
 # return the ground truth in its original shape
-def get_data_testing_overlap(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Imgs_to_test, patch_height, patch_width, stride_height, stride_width):
+def get_data_testing_overlap(test_data_path_list, patch_height, patch_width, stride_height, stride_width):
     ### test
-    test_imgs_original = load_hdf5(DRIVE_test_imgs_original)
-    test_masks = load_hdf5(DRIVE_test_groudTruth)
+    test_imgs_original, test_masks, boder_mask= load_data(test_data_path_list)
 
     test_imgs = my_PreProc(test_imgs_original)
     test_masks = test_masks/255.
     #extend both images and masks so they can be divided exactly by the patches dimensions
-    test_imgs = test_imgs[0:Imgs_to_test,:,:,:]
-    test_masks = test_masks[0:Imgs_to_test,:,:,:]
     test_imgs = paint_border_overlap(test_imgs, patch_height, patch_width, stride_height, stride_width)
 
     #check masks are within 0-1
@@ -107,7 +99,7 @@ def get_data_testing_overlap(DRIVE_test_imgs_original, DRIVE_test_groudTruth, Im
     print("\ntest PATCHES images shape: ", patches_imgs_test.shape)
     print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
 
-    return patches_imgs_test, test_imgs.shape[2], test_imgs.shape[3], test_masks
+    return patches_imgs_test, test_imgs_original, test_masks, boder_mask, test_imgs.shape[2], test_imgs.shape[3]
 
 
 #data consinstency check
@@ -394,7 +386,7 @@ def load_file_path_txt(file_path):
             fov_list.append(fov)
     return img_list,gt_list,fov_list
 
-def load_hdf5(data_path_list_file):
+def load_data(data_path_list_file):
     img_list, gt_list, fov_list = load_file_path_txt(data_path_list_file)
     imgs = None
     groundTruth = None

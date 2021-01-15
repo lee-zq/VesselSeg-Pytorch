@@ -10,7 +10,7 @@ from lib.losses.loss import *
 from lib.losses.lovasz_loss import lovasz_with_softmax
 from lib.help_functions import *
 from lib.common import *
-from lib.dataset.dataset import TrainDataset,TestDataset
+from lib.dataset import TrainDataset,TestDataset
 from config import parse_args
 from lib.logger import Logger, Print_Logger
 from collections import OrderedDict

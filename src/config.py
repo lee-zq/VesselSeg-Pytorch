@@ -30,9 +30,9 @@ def parse_args():
     parser.add_argument('--classes', default=2, type=int,help='output channels')
 
     # training
-    parser.add_argument('--N_epochs', default=50, type=int, help='number of total epochs to run')
+    parser.add_argument('--N_epochs', default=10, type=int, help='number of total epochs to run')
     parser.add_argument('--batch_size', default=64, type=int,help='batch size')
-    parser.add_argument('--early-stop', default=None, type=int,help='early stopping (default: 20)')
+    parser.add_argument('--early-stop', default=10, type=int,help='early stopping (default: 10)')
     # parser.add_argument('--loss', default='BCEWithLogitsLoss',help='loss function')
     parser.add_argument('--optimizer', default='Adam',
                         choices=['Adam', 'SGD'],
@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument('--start_epoch',default=1)
 
     # testing
-    parser.add_argument('--full_images_to_test', default=20,help='N full images to be predicted')
+    # parser.add_argument('--full_images_to_test', default=20,help='N full images to be predicted')
     parser.add_argument('--N_group_visual', default=1,help='Grouping of the predicted images')
     parser.add_argument('--average_mode', default=True)
     parser.add_argument('--test_patch_height', default=96)

@@ -7,22 +7,17 @@ def parse_args():
     # in/out
     parser.add_argument('--outf', default='../experiments/', help='trained model will be saved at here')
     parser.add_argument('--save',default='test', help='save path name')
-    # parser.add_argument('--model', '-m', default='untitled')
-    # parser.add_argument('--dataset', default="DRIVE", help='dataset name')
-    # parser.add_argument('--aug', default=True, type=bool,help='augment dataset(已实现,内置) ')
 
     # data
-    parser.add_argument('--train_data_path_list',default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+    parser.add_argument('--train_data_path_list',\
+        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
 
-    # parser.add_argument('--val_img', default='imgs_val.hdf5')
-    # parser.add_argument('--val_gt', default='groundTruth_val.hdf5')
-    # parser.add_argument('--val_mask', default='borderMasks_val.hdf5')
-
-    parser.add_argument('--test_data_path_list', default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+    parser.add_argument('--test_data_path_list',\
+        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
 
     parser.add_argument('--patch_height', default=48)
     parser.add_argument('--patch_width', default=48)
-    parser.add_argument('--N_subimgs', default=100000)
+    parser.add_argument('--N_patches', default=100000)
     parser.add_argument('--inside_FOV', default=False)
     parser.add_argument('--val_portion',default=0.1)
     # model parameters
@@ -34,19 +29,12 @@ def parse_args():
     parser.add_argument('--batch_size', default=64, type=int,help='batch size')
     parser.add_argument('--early-stop', default=10, type=int,help='early stopping (default: 10)')
     # parser.add_argument('--loss', default='BCEWithLogitsLoss',help='loss function')
-    parser.add_argument('--optimizer', default='Adam',
-                        choices=['Adam', 'SGD'],
-                        help='optimizer')
     parser.add_argument('--lr', default=0.0001, type=float,
                          help='initial learning rate')
-    parser.add_argument('--momentum', default=0.9, type=float,
-                        help='momentum')
-    parser.add_argument('--weight-decay', default=1e-4, type=float,
-                        help='weight decay')
 
     parser.add_argument('--pre_trained',default=None,help='(path of trained _model)load trained model to continue train')
 
-    # pre_trained checkpoint
+    # for pre_trained checkpoint
     parser.add_argument('--start_epoch',default=1)
 
     # testing

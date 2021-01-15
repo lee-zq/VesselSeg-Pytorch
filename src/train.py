@@ -5,7 +5,7 @@ from tqdm import tqdm
 import random,sys
 from os.path import join
 import torch
-from lib.extract_patches import get_data_training
+from lib.extract_patches import get_data_train
 from lib.losses.loss import *
 from lib.losses.lovasz_loss import lovasz_with_softmax
 from lib.help_functions import *
@@ -20,11 +20,11 @@ from lib.val_on_test import Val_on_testSet
 #  Load the data and divided in patches
 
 def get_dataloader(args):
-    patches_imgs_train, patches_masks_train = get_data_training(
+    patches_imgs_train, patches_masks_train = get_data_train(
         data_path_list = args.train_data_path_list,
         patch_height = args.patch_height,
         patch_width = args.patch_width,
-        N_subimgs = args.N_subimgs,
+        N_patches = args.N_patches,
         inside_FOV = args.inside_FOV #select the patches only inside the FOV  (default == False)
     )
 
@@ -87,11 +87,7 @@ def val(val_loader,net,criterion,device):
     return log
 
 def main():
-    """
-    该文件用test集里面的数据进行验证保存最佳模型
-    """
     setpu_seed(2020)
-    
     args = parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
@@ -101,8 +97,6 @@ def main():
     log = Logger(save_path)
     sys.stdout = Print_Logger(os.path.join(save_path,'train_log.txt'))
 
-    # net = models.LadderNetv6(inplanes=1,num_classes=2, layers=3, filters=6)
-    # net = models.Dense_Unet(in_chan=1,out_chan=2,filters=64)
     # net = models.UNetFamily.R2AttU_Net(1,2)
     net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16)
     print("Total number of parameters: " + str(count_parameters(net)))
@@ -110,7 +104,7 @@ def main():
     # torch.nn.init.kaiming_normal(net, mode='fan_out')      # 修改默认初始化方法
     # net.apply(weight_init)
     # net = torch.nn.DataParallel(net, device_ids=[0,1])
-    # log.save_graph(net,torch.randn((1,1,48,48)).to(device=device))  # 保存模型结构到tensorboard
+    log.save_graph(net,torch.randn((1,1,48,48)).to(device=device))  # 保存模型结构到tensorboard文件
 
     criterion = LossMulti(jaccard_weight=0,class_weights=np.array([0.5,0.5]))
     # criterion = CrossEntropy2d()
@@ -119,24 +113,22 @@ def main():
     # lr_epoch = np.array([50, args.N_epochs])
     # lr_value = np.array([0.001, 0.0001])
     # lr_schedule = make_lr_schedule(lr_epoch,lr_value)
-    # optimizer setting
-    optimizer = optim.Adam(net.parameters(), lr=args.lr)
     # lr_scheduler = optim.lr_scheduler.StepLR(optimizer,step_size=10,gamma=0.5)
-    lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
     # optimizer = optim.SGD(net.parameters(),lr=lr_schedule[0], momentum=0.9, weight_decay=5e-4, nesterov=True)
-
-    best = [0,0] # 初始化最优模型的epoch和performance
-    trigger = 0  # early stop 计数器
+    optimizer = optim.Adam(net.parameters(), lr=args.lr)
+    lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
     if args.pre_trained is not None:
         # Load checkpoint.
         print('==> Resuming from checkpoint..')
-        checkpoint = torch.load('./output/%s/latest_model.pth' % args.pre_trained)
+        checkpoint = torch.load('../experiments/%s/latest_model.pth' % args.pre_trained)
         net.load_state_dict(checkpoint['net'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         args.start_epoch = checkpoint['epoch']+1
 
     # eval_tool = Val_on_testSet(args)
+    best = [0,0] # 初始化最优模型的epoch和performance
+    trigger = 0  # early stop 计数器
     for epoch in range(args.start_epoch,args.N_epochs+1):
         train_loader, val_loader = get_dataloader(args)        
         print('\nEPOCH: %d/%d --(learn_rate:%.6f)' % ((epoch), args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr']))
@@ -146,8 +138,8 @@ def main():
         # eval_tool.inference(net)
         # val_log = eval_tool.evaluate()
         log.update(epoch,train_log,val_log)
-        
         lr_scheduler.step()
+
         # Save checkpoint.
         state = {'net': net.state_dict(),'optimizer':optimizer.state_dict(),'epoch': epoch}
         torch.save(state, join(save_path, 'latest_model.pth'))

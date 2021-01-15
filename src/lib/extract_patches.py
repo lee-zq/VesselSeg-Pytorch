@@ -12,30 +12,29 @@ from .pre_processing import my_PreProc
 # random.seed(10
 
 #Load the original data and return the extracted patches for training/testing
-def get_data_training(data_path_list,
+def get_data_train(data_path_list,
                       patch_height,
                       patch_width,
-                      N_subimgs,
+                      N_patches,
                       inside_FOV):
-    train_imgs_original, train_masks, _ = load_data(data_path_list)
+    train_imgs_original, train_masks, train_FOVs = load_data(data_path_list)
     # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
 
     train_imgs = my_PreProc(train_imgs_original)
     train_masks = train_masks/255.
+    train_FOVs = train_FOVs//255
 
     train_imgs = train_imgs[:,:,9:-9,9:-9]  # cut bottom and top so now it is 565*565
     train_masks = train_masks[:,:,9:-9,9:-9]  # 针对不同的数据集，建议改变这里的crop范围或者去掉裁剪亦可
 
     data_consistency_check(train_imgs,train_masks)  # 检查维度是否正确
-
-    #check masks are within 0-1
     assert(np.min(train_masks)==0 and np.max(train_masks)==1)
-
+    #check masks are within 0-1
     print("\ntrain images/masks shape: ", train_imgs.shape)
     print("train images range (min-max): " +str(np.min(train_imgs)) +' - '+str(np.max(train_imgs)))
 
     #extract the TRAINING patches from the full images
-    patches_imgs_train, patches_masks_train = extract_random(train_imgs,train_masks,patch_height,patch_width,N_subimgs,inside_FOV)
+    patches_imgs_train, patches_masks_train = extract_random(train_imgs,train_masks,train_FOVs,patch_height,patch_width,N_patches,inside_FOV)
     data_consistency_check(patches_imgs_train, patches_masks_train)
 
     print("train PATCHES images/masks shape: ",patches_imgs_train.shape)
@@ -114,22 +113,17 @@ def data_consistency_check(imgs,masks):
 
 #extract patches randomly in the full training images
 #  -- Inside OR in full image
-def extract_random(full_imgs,full_masks, patch_h,patch_w, N_patches, inside=True):
-    if (N_patches%full_imgs.shape[0] != 0):
-        print("N_patches: please enter a multiple of train img numbers")
-        print("Number of imgs is :", full_imgs.shape[0])
-        exit()
-    assert (len(full_imgs.shape)==4 and len(full_masks.shape)==4)  #4D arrays
-    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
-    assert (full_masks.shape[1]==1)   #masks only black and white
-    assert (full_imgs.shape[2] == full_masks.shape[2] and full_imgs.shape[3] == full_masks.shape[3])
+def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, inside=True):
+
     patches = np.empty((N_patches,full_imgs.shape[1],patch_h,patch_w))
     patches_masks = np.empty((N_patches,full_masks.shape[1],patch_h,patch_w), dtype=np.uint8)
     img_h = full_imgs.shape[2]  #height of the full image
     img_w = full_imgs.shape[3] #width of the full image
     # (0,0) in the center of the image
     patch_per_img = int(N_patches/full_imgs.shape[0])  #N_patches equally divided in the full images
-    print("patches per full image: " +str(patch_per_img))
+    if (N_patches%full_imgs.shape[0] != 0):
+        raise Warning("Recommended N_patches be set as a multiple of train img numbers")
+    print("patches per image: " +str(patch_per_img))
     iter_tot = 0   #iter over the total numbe rof patches (N_patches)
     for i in range(full_imgs.shape[0]):  #loop over the full images
         k=0

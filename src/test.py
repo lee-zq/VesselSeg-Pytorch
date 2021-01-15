@@ -29,20 +29,20 @@ class Test_on_testSet():
         # save path
         self.path_experiment = args.outf + args.save +'/'
         #============ Load the data and divide in patches=================================
-        self.patches_imgs_test, self.test_imgs_orig, self.masks_test, self.test_border_masks, self.new_height, self.new_width = get_data_testing_overlap(
+        self.patches_imgs_test, self.test_imgs_orig, self.gtruth_masks, self.test_border_masks, self.new_height, self.new_width = get_data_testing_overlap(
             test_data_path_list = args.test_data_path_list,
             patch_height = args.patch_height,
             patch_width = args.patch_width,
             stride_height = args.stride_height,
             stride_width = args.stride_width
             )
-        self.gtruth_masks = self.masks_test
-        self.full_img_height = self.test_imgs_orig.shape[2]
-        self.full_img_width = self.test_imgs_orig.shape[3]
+
+        self.img_height = self.test_imgs_orig.shape[2]
+        self.img_width = self.test_imgs_orig.shape[3]
 
         test_set = TestDataset(self.patches_imgs_test)
-        self.test_loader = DataLoader(test_set, batch_size=args.batch_size,
-                                  shuffle=False, num_workers=3)
+        self.test_loader = DataLoader(test_set, batch_size=args.batch_size,shuffle=False, num_workers=3)
+
     def inference(self,net):
         net.eval()
         preds = []
@@ -52,8 +52,7 @@ class Test_on_testSet():
                 outputs = net(inputs)
                 outputs = torch.nn.functional.softmax(outputs,dim=1)
                 outputs = outputs.permute(0,2,3,1)
-                shape = list(outputs.shape)
-                outputs = outputs.view(-1,shape[1]*shape[2],2)
+                outputs = outputs.view(-1,outputs.shape[1]*outputs.shape[2],2)
                 outputs = outputs.data.cpu().numpy()
                 preds.append(outputs)
         predictions = np.concatenate(preds,axis=0)
@@ -64,11 +63,11 @@ class Test_on_testSet():
         #========== Elaborate and visualize the predicted images ====================
         pred_imgs = recompone_overlap(self.pred_patches, self.new_height, self.new_width, self.args.stride_height, self.args.stride_width)# predictions
         orig_imgs = my_PreProc(self.test_imgs_orig)     #originals
-        gtruth_masks = self.masks_test
+        gtruth_masks = self.gtruth_masks
 
         kill_border(pred_imgs, self.test_border_masks)  #DRIVE MASK  #only for visualization
         ## back to original dimensions
-        pred_imgs = pred_imgs[:,:,0:self.full_img_height,0:self.full_img_width]
+        pred_imgs = pred_imgs[:,:,0:self.img_height,0:self.img_width]
         ######################保存结果图########
         self.save_img_path = join(self.path_experiment,'result_img')
         if not os.path.exists(join(self.save_img_path)):

@@ -8,9 +8,7 @@ from .common import readImg
 from .pre_processing import my_PreProc
 
 
-#To select the same images
-# random.seed(10
-
+#=======================================================================================================
 #Load the original data and return the extracted patches for training/testing
 def get_data_train(data_path_list,
                       patch_height,
@@ -29,6 +27,7 @@ def get_data_train(data_path_list,
 
     data_consistency_check(train_imgs,train_masks)  # 检查维度是否正确
     assert(np.min(train_masks)==0 and np.max(train_masks)==1)
+    assert(np.min(train_FOVs)==0 and np.max(train_FOVs)==1)
     #check masks are within 0-1
     print("\ntrain images/masks shape: ", train_imgs.shape)
     print("train images range (min-max): " +str(np.min(train_imgs)) +' - '+str(np.max(train_imgs)))
@@ -42,42 +41,64 @@ def get_data_train(data_path_list,
 
     return patches_imgs_train, patches_masks_train#, patches_imgs_test, patches_masks_test
 
+#extract patches randomly in the full training images
+#  -- Inside OR in full image
+def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, inside=True):
 
-# Load the original data and return the extracted patches for training/testing
-def get_data_testing(test_data_path_list, patch_height, patch_width):
-    ### test
-    test_imgs_original, test_masks, boder_mask = load_data(test_data_path_list)
+    patches = np.empty((N_patches,full_imgs.shape[1],patch_h,patch_w))
+    patches_masks = np.empty((N_patches,full_masks.shape[1],patch_h,patch_w), dtype=np.uint8)
+    img_h = full_imgs.shape[2]  #height of the full image
+    img_w = full_imgs.shape[3] #width of the full image
+    # (0,0) in the center of the image
+    patch_per_img = int(N_patches/full_imgs.shape[0])  #N_patches equally divided in the full images
+    if (N_patches%full_imgs.shape[0] != 0):
+        Warning("Recommended N_patches be set as a multiple of train img numbers")
+    print("patches per image: " +str(patch_per_img))
+    iter_tot = 0   #iter over the total numbe rof patches (N_patches)
+    for i in range(full_imgs.shape[0]):  #loop over the full images
+        k=0
+        while k <patch_per_img:
+            x_center = random.randint(0+int(patch_w/2),img_w-int(patch_w/2))
+            y_center = random.randint(0+int(patch_h/2),img_h-int(patch_h/2))
+            #check whether the patch is fully contained in the FOV
+            if inside==True:
+                if not is_patch_inside_FOV(x_center,y_center,full_FOVs[i,0],patch_h,patch_w,mode='all'):
+                    continue
+            patch = full_imgs[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
+            patch_mask = full_masks[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
+            patches[iter_tot]=patch
+            patches_masks[iter_tot]=patch_mask
+            iter_tot +=1   #total
+            k+=1  #per full_img
+        # print("test最后一个采样点：",x_center,y_center)
+    return patches, patches_masks
 
-    test_imgs = my_PreProc(test_imgs_original)
-    test_masks = test_masks/255.
+# check if the patch is fully contained in the FOV  
+# 检查训练样本块是在在FOV区域内,center模式检查patch中心像素点是否在fov内，all模式检查patch所有像素是否都在fov内
+def is_patch_inside_FOV(x,y,fov_img,patch_h,patch_w,mode):
+    if mode == 'center':
+        return fov_img[y,x]
+    elif mode == 'all':
+        fov_patch = fov_img[y-int(patch_h/2):y+int(patch_h/2),x-int(patch_w/2):x+int(patch_w/2)]
+        return fov_patch.all()
+    else:
+        raise ValueError("mode is incurrent!")
 
-    # extend both images and masks so they can be divided exactly by the patches dimensions
-    test_imgs = paint_border(test_imgs,patch_height,patch_width)
-    test_masks = paint_border(test_masks,patch_height,patch_width)
+#data consinstency check
+def data_consistency_check(imgs,masks):
+    assert(len(imgs.shape)==len(masks.shape))
+    assert(imgs.shape[0]==masks.shape[0])
+    assert(imgs.shape[2]==masks.shape[2])
+    assert(imgs.shape[3]==masks.shape[3])
+    assert(masks.shape[1]==1)
+    assert(imgs.shape[1]==1 or imgs.shape[1]==3)
 
-    data_consistency_check(test_imgs, test_masks)
-
-    #check masks are within 0-1
-    assert(np.max(test_masks)==1  and np.min(test_masks)==0)
-
-    print("\ntest images/masks shape: ",test_imgs.shape)
-    print("test images range (min-max): " +str(np.min(test_imgs)) +' - '+str(np.max(test_imgs)))
-    #extract the TEST patches from the full images
-    patches_imgs_test = extract_ordered(test_imgs,patch_height,patch_width)
-    patches_masks_test = extract_ordered(test_masks,patch_height,patch_width)
-    data_consistency_check(patches_imgs_test, patches_masks_test)
-
-    print("test PATCHES images/masks shape: "+patches_imgs_test.shape)
-    print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
-
-    return patches_imgs_test, test_imgs_original, patches_masks_test, test_mask, boder_mask
-
-
+# ============================================================================================================
 # Load the original data and return the extracted patches for testing
 # return the ground truth in its original shape
-def get_data_testing_overlap(test_data_path_list, patch_height, patch_width, stride_height, stride_width):
+def get_data_test_overlap(test_data_path_list, patch_height, patch_width, stride_height, stride_width):
     ### test
-    test_imgs_original, test_masks, boder_mask= load_data(test_data_path_list)
+    test_imgs_original, test_masks, test_FOVs= load_data(test_data_path_list)
 
     test_imgs = my_PreProc(test_imgs_original)
     test_masks = test_masks/255.
@@ -98,91 +119,7 @@ def get_data_testing_overlap(test_data_path_list, patch_height, patch_width, str
     print("\ntest PATCHES images shape: ", patches_imgs_test.shape)
     print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
 
-    return patches_imgs_test, test_imgs_original, test_masks, boder_mask, test_imgs.shape[2], test_imgs.shape[3]
-
-
-#data consinstency check
-def data_consistency_check(imgs,masks):
-    assert(len(imgs.shape)==len(masks.shape))
-    assert(imgs.shape[0]==masks.shape[0])
-    assert(imgs.shape[2]==masks.shape[2])
-    assert(imgs.shape[3]==masks.shape[3])
-    assert(masks.shape[1]==1)
-    assert(imgs.shape[1]==1 or imgs.shape[1]==3)
-
-
-#extract patches randomly in the full training images
-#  -- Inside OR in full image
-def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, inside=True):
-
-    patches = np.empty((N_patches,full_imgs.shape[1],patch_h,patch_w))
-    patches_masks = np.empty((N_patches,full_masks.shape[1],patch_h,patch_w), dtype=np.uint8)
-    img_h = full_imgs.shape[2]  #height of the full image
-    img_w = full_imgs.shape[3] #width of the full image
-    # (0,0) in the center of the image
-    patch_per_img = int(N_patches/full_imgs.shape[0])  #N_patches equally divided in the full images
-    if (N_patches%full_imgs.shape[0] != 0):
-        raise Warning("Recommended N_patches be set as a multiple of train img numbers")
-    print("patches per image: " +str(patch_per_img))
-    iter_tot = 0   #iter over the total numbe rof patches (N_patches)
-    for i in range(full_imgs.shape[0]):  #loop over the full images
-        k=0
-        while k <patch_per_img:
-            x_center = random.randint(0+int(patch_w/2),img_w-int(patch_w/2))
-            # print "x_center " +str(x_center)
-            y_center = random.randint(0+int(patch_h/2),img_h-int(patch_h/2))
-            # print "y_center " +str(y_center)
-            #check whether the patch is fully contained in the FOV
-            if inside==True:
-                if is_patch_inside_FOV(x_center,y_center,img_w,img_h,patch_h)==False:
-                    continue
-            patch = full_imgs[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
-            patch_mask = full_masks[i,:,y_center-int(patch_h/2):y_center+int(patch_h/2),x_center-int(patch_w/2):x_center+int(patch_w/2)]
-            patches[iter_tot]=patch
-            patches_masks[iter_tot]=patch_mask
-            iter_tot +=1   #total
-            k+=1  #per full_img
-        # print("test最后一个采样点：",x_center,y_center)
-    return patches, patches_masks
-
-
-# heck if the patch is fully contained in the FOV  检查训练样本块是否完全包含在在FOV区域内
-def is_patch_inside_FOV(x,y,img_w,img_h,patch_h):
-    x_ = x - int(img_w/2) # origin (0,0) shifted to image center
-    y_ = y - int(img_h/2)  # origin (0,0) shifted to image center
-    R_inside = 270 - int(patch_h * np.sqrt(2.0) / 2.0) #radius is 270 (from DRIVE db docs), minus the patch diagonal (assumed it is a square #this is the limit to contain the full patch in the FOV
-    radius = np.sqrt((x_*x_)+(y_*y_))
-    if radius < R_inside:
-        return True
-    else:
-        return False
-
-
-#Divide all the full_imgs in pacthes
-def extract_ordered(full_imgs, patch_h, patch_w):
-    assert (len(full_imgs.shape)==4)  #4D arrays
-    assert (full_imgs.shape[1]==1 or full_imgs.shape[1]==3)  #check the channel is 1 or 3
-    img_h = full_imgs.shape[2]  #height of the full image
-    img_w = full_imgs.shape[3] #width of the full image
-    N_patches_h = int(img_h/patch_h) #round to lowest int
-    if (img_h%patch_h != 0):
-        print("warning: " +str(N_patches_h) +" patches in height, with about " +str(img_h%patch_h) +" pixels left over")
-    N_patches_w = int(img_w/patch_w) #round to lowest int
-    if (img_h%patch_h != 0):
-        print("warning: " +str(N_patches_w) +" patches in width, with about " +str(img_w%patch_w) +" pixels left over")
-    print("number of patches per image: " +str(N_patches_h*N_patches_w))
-    N_patches_tot = (N_patches_h*N_patches_w)*full_imgs.shape[0]
-    patches = np.empty((N_patches_tot,full_imgs.shape[1],patch_h,patch_w))
-
-    iter_tot = 0   #iter over the total number of patches (N_patches)
-    for i in range(full_imgs.shape[0]):  #loop over the full images
-        for h in range(N_patches_h):
-            for w in range(N_patches_w):
-                patch = full_imgs[i,:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]
-                patches[iter_tot]=patch
-                iter_tot +=1   #total
-    assert (iter_tot==N_patches_tot)
-    return patches  #array with all the full_imgs divided in patches
+    return patches_imgs_test, test_imgs_original, test_masks, test_FOVs, test_imgs.shape[2], test_imgs.shape[3]
 
 
 def paint_border_overlap(full_imgs, patch_h, patch_w, stride_h, stride_w):
@@ -266,55 +203,6 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     assert(np.max(final_avg)<=1.0) #max value for a pixel is 1.0
     assert(np.min(final_avg)>=0.0) #min value for a pixel is 0.0
     return final_avg
-
-
-#Recompone the full images with the patches
-def recompone(data,N_h,N_w):
-    assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
-    assert(len(data.shape)==4)
-    N_pacth_per_img = N_w*N_h
-    assert(data.shape[0]%N_pacth_per_img == 0)
-    N_full_imgs = data.shape[0]//N_pacth_per_img
-    patch_h = data.shape[2]
-    patch_w = data.shape[3]
-    N_pacth_per_img = N_w*N_h
-    #define and start full recompone
-    full_recomp = np.empty((N_full_imgs,data.shape[1],N_h*patch_h,N_w*patch_w))
-    k = 0  #iter full img
-    s = 0  #iter single patch
-    while (s<data.shape[0]):
-        #recompone one:
-        single_recon = np.empty((data.shape[1],N_h*patch_h,N_w*patch_w))
-        for h in range(N_h):
-            for w in range(N_w):
-                single_recon[:,h*patch_h:(h*patch_h)+patch_h,w*patch_w:(w*patch_w)+patch_w]=data[s]
-                s+=1
-        full_recomp[k]=single_recon
-        k+=1
-    assert (k==N_full_imgs)
-    return full_recomp
-
-
-#Extend the full images becasue patch divison is not exact
-def paint_border(data,patch_h,patch_w):
-    assert (len(data.shape)==4)  #4D arrays
-    assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
-    img_h=data.shape[2]
-    img_w=data.shape[3]
-    new_img_h = 0
-    new_img_w = 0
-    if (img_h%patch_h)==0:
-        new_img_h = img_h
-    else:
-        new_img_h = ((int(img_h)/int(patch_h))+1)*patch_h
-    if (img_w%patch_w)==0:
-        new_img_w = img_w
-    else:
-        new_img_w = ((int(img_w)/int(patch_w))+1)*patch_w
-    new_data = np.zeros((data.shape[0],data.shape[1],int(new_img_h),int(new_img_w))) # xiugai wei int
-    new_data[:,:,0:img_h,0:img_w] = data[:,:,:,:]
-    return new_data
-
 
 #return only the pixels contained in the FOV, for both images and masks
 def pred_only_FOV(data_imgs,data_masks,original_imgs_border_masks):

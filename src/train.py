@@ -16,7 +16,7 @@ from lib.logger import Logger, Print_Logger
 from collections import OrderedDict
 from lib.metrics import Evaluate
 import models
-from lib.val_on_test import Val_on_testSet
+# from lib.val_on_test import Val_on_testSet
 #  Load the data and divided in patches
 
 def get_dataloader(args):
@@ -41,10 +41,10 @@ def get_dataloader(args):
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
                               shuffle=False, num_workers=6)
     # Save a sample of what you're feeding to the neural network
-    N_sample = min(patches_imgs_train.shape[0], 40)
-    visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 5),
+    N_sample = min(patches_imgs_train.shape[0], 200)
+    visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 20),
               args.outf + args.save + '/' + "sample_input_imgs")
-    visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 5),
+    visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 20),
               args.outf + args.save + '/' + "sample_input_masks")
     return train_loader,val_loader
 
@@ -87,7 +87,7 @@ def val(val_loader,net,criterion,device):
     return log
 
 def main():
-    setpu_seed(2020)
+    setpu_seed(222)
     args = parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")

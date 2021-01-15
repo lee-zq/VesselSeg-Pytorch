@@ -10,7 +10,7 @@ import os
 import argparse
 from lib.logger import Logger, Print_Logger
 # extract_patches.py
-from lib.extract_patches import recompone_overlap, kill_border, pred_only_FOV, get_data_testing_overlap
+from lib.extract_patches import recompone_overlap, kill_border, pred_only_FOV, get_data_test_overlap
 # pre_processing.py
 from os.path import join
 from lib.dataset import TestDataset
@@ -29,7 +29,7 @@ class Test_on_testSet():
         # save path
         self.path_experiment = args.outf + args.save +'/'
         #============ Load the data and divide in patches=================================
-        self.patches_imgs_test, self.test_imgs_orig, self.gtruth_masks, self.test_border_masks, self.new_height, self.new_width = get_data_testing_overlap(
+        self.patches_imgs_test, self.test_imgs, self.test_masks, self.test_FOVs, self.new_height, self.new_width = get_data_test_overlap(
             test_data_path_list = args.test_data_path_list,
             patch_height = args.patch_height,
             patch_width = args.patch_width,
@@ -37,8 +37,8 @@ class Test_on_testSet():
             stride_width = args.stride_width
             )
 
-        self.img_height = self.test_imgs_orig.shape[2]
-        self.img_width = self.test_imgs_orig.shape[3]
+        self.img_height = self.test_imgs.shape[2]
+        self.img_width = self.test_imgs.shape[3]
 
         test_set = TestDataset(self.patches_imgs_test)
         self.test_loader = DataLoader(test_set, batch_size=args.batch_size,shuffle=False, num_workers=3)
@@ -62,10 +62,10 @@ class Test_on_testSet():
     def evaluate(self):
         #========== Elaborate and visualize the predicted images ====================
         pred_imgs = recompone_overlap(self.pred_patches, self.new_height, self.new_width, self.args.stride_height, self.args.stride_width)# predictions
-        orig_imgs = my_PreProc(self.test_imgs_orig)     #originals
-        gtruth_masks = self.gtruth_masks
+        orig_imgs = my_PreProc(self.test_imgs)     #originals
+        gtruth_masks = self.test_masks
 
-        kill_border(pred_imgs, self.test_border_masks)  #DRIVE MASK  #only for visualization
+        kill_border(pred_imgs, self.test_FOVs)  #DRIVE MASK  #only for visualization
         ## back to original dimensions
         pred_imgs = pred_imgs[:,:,0:self.img_height,0:self.img_width]
         ######################保存结果图########
@@ -87,7 +87,7 @@ class Test_on_testSet():
             visualize(total_img,self.save_img_path +"/Original_GroundTruth_Prediction"+str(i))#.show()
         ######################
         #predictions only inside the FOV
-        y_scores, y_true = pred_only_FOV(pred_imgs,self.gtruth_masks, self.test_border_masks)  #returns data only inside the FOV
+        y_scores, y_true = pred_only_FOV(pred_imgs,self.test_masks, self.test_FOVs)  #returns data only inside the FOV
         eval = Evaluate(save_path=self.path_experiment)
         eval.add_batch(y_true,y_scores)
         # log = OrderedDict([('val_auc_roc', eval.auc_roc()), ('val_f1', eval.f1_score())])

@@ -28,7 +28,6 @@ def group_images(data,per_row):
         totimg = np.concatenate((totimg,all_stripe[i]),axis=0)
     return totimg
 
-
 #visualize image (as PIL image, NOT as matplotlib!)
 def visualize(data,filename):
     assert (len(data.shape)==3) #height*width*channels

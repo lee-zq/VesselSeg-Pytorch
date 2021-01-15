@@ -10,15 +10,15 @@ def parse_args():
 
     # data
     parser.add_argument('--train_data_path_list',\
-        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/STARE/train.txt')
 
     parser.add_argument('--test_data_path_list',\
-        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/STARE/train.txt')
 
     parser.add_argument('--patch_height', default=48)
     parser.add_argument('--patch_width', default=48)
     parser.add_argument('--N_patches', default=100000)
-    parser.add_argument('--inside_FOV', default=False)
+    parser.add_argument('--inside_FOV', default=True)
     parser.add_argument('--val_portion',default=0.1)
     # model parameters
     parser.add_argument('--in_channels', default=1, type=int,help='input channels')

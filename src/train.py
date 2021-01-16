@@ -16,9 +16,10 @@ from lib.logger import Logger, Print_Logger
 from collections import OrderedDict
 from lib.metrics import Evaluate
 import models
-# from lib.val_on_test import Val_on_testSet
-#  Load the data and divided in patches
+from test import Test_on_testSet
 
+
+#  Load the data and divided in patches
 def get_dataloader(args):
     patches_imgs_train, patches_masks_train = get_data_train(
         data_path_list = args.train_data_path_list,
@@ -27,9 +28,7 @@ def get_dataloader(args):
         N_patches = args.N_patches,
         inside_FOV = args.inside_FOV #select the patches only inside the FOV  (default == False)
     )
-
     val_ind = random.sample(range(patches_masks_train.shape[0]),int(np.floor(args.val_ratio*patches_masks_train.shape[0])))
-
     train_ind =  set(range(patches_masks_train.shape[0])) - set(val_ind)
     train_ind = list(train_ind)
 
@@ -40,19 +39,19 @@ def get_dataloader(args):
     val_set = TrainDataset(patches_imgs_train[val_ind,...],patches_masks_train[val_ind,...],mode="val")
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
                             shuffle=False, num_workers=6)
-    # Save a sample of what you're feeding to the neural network
+    # Save some samples of  feeding to the neural network
     N_sample = min(patches_imgs_train.shape[0], 100)
-    visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 10),
+    visualize(group_images((patches_imgs_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
               join(args.outf, args.save, "sample_input_imgs.png"))
-    visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 10),
+    visualize(group_images((patches_masks_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
               join(args.outf, args.save,"sample_input_masks.png"))
     return train_loader,val_loader
 
+# train 
 def train(train_loader,net,criterion,optimizer,device):
     net.train()
     train_loss = AverageMeter()
 
-    # train network
     for batch_idx, (inputs, targets) in tqdm(enumerate(train_loader), total=len(train_loader)):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
@@ -66,6 +65,7 @@ def train(train_loader,net,criterion,optimizer,device):
     log = OrderedDict([('train_loss',train_loss.avg)])
     return log
 
+# val 
 def val(val_loader,net,criterion,device):
     net.eval()
     val_loss = AverageMeter()
@@ -77,12 +77,12 @@ def val(val_loader,net,criterion,device):
             loss = criterion(outputs, targets)
             val_loss.update(loss.item(), inputs.size(0))
 
-            # evaluate
             outputs = torch.nn.functional.softmax(outputs,dim=1)
             outputs = outputs.data.cpu().numpy()
             targets = targets.data.cpu().numpy()
             evaluater.add_batch(targets,outputs[:,1])
-    log = OrderedDict([('val_loss', val_loss.avg), ('val_f1', evaluater.f1_score()),('val_auc_roc', evaluater.auc_roc())])
+    log = OrderedDict([('val_loss', val_loss.avg), ('val_acc', evaluater.confusion_matrix()[1]), 
+                        ('val_f1', evaluater.f1_score()),('val_auc_roc', evaluater.auc_roc())])
     return log
 
 def main():
@@ -99,6 +99,7 @@ def main():
     # net = models.UNetFamily.R2AttU_Net(1,2).to(device)
     net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
+
     log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file
     # torch.nn.init.kaiming_normal(net, mode='fan_out')      # Modify default initialization method
     # net.apply(weight_init)
@@ -125,8 +126,8 @@ def main():
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
     train_loader, val_loader = get_dataloader(args) 
-    # eval_tool = Val_on_testSet(args)
-    best = {'epoch':0,'AUC':0.5} # Initialize the best epoch and performance(AUC)
+    # eval_tool = Test_on_testSet(args) 
+    best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
     trigger = 0  # early stop 计数器
     for epoch in range(args.start_epoch,args.N_epochs+1):
         print('\nEPOCH: %d/%d --(learn_rate:%.6f)' % ((epoch), args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr']))
@@ -142,13 +143,13 @@ def main():
         state = {'net': net.state_dict(),'optimizer':optimizer.state_dict(),'epoch': epoch}
         torch.save(state, join(save_path, 'latest_model.pth'))
         trigger += 1
-        if val_log['val_auc_roc'] > best['AUC']:
+        if val_log['val_auc_roc'] > best['AUC_roc']:
             print('Saving best model')
             torch.save(state, join(save_path, 'best_model.pth'))
             best['epoch'] = epoch
-            best['AUC'] = val_log['val_auc_roc']
+            best['AUC_roc'] = val_log['val_auc_roc']
             trigger = 0
-        print('Get best performance at Epoch: {} | AUC: {}'.format(best['epoch'],best['AUC']))
+        print('Best performance at Epoch: {} | AUC_roc: {}'.format(best['epoch'],best['AUC_roc']))
         # early stopping
         if not args.early_stop is None:
             if trigger >= args.early_stop:

@@ -8,15 +8,7 @@ from PIL import Image
 import cv2,sys
 
 def readImg(im_fn):
-    im = cv2.imread(im_fn)
-    if im is None :
-        tmp = imageio.mimread(im_fn)
-        if tmp is not None:
-            imt = np.array(tmp)
-            imt = imt[0]
-            im = imt[:,:] #mask和gt是灰度图，取单通道
-            #  _, im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY) #单通道不需要二值化处理，只有test中2nd_manual是四通道，暂时不考虑
-    # print('loading image ：', im_fn)
+    im = Image.open(im_fn)
     return im
 #============================================================
 #convert RGB image in black and white
@@ -49,7 +41,6 @@ def clahe_equalized(imgs):
         imgs_equalized[i,0] = clahe.apply(np.array(imgs[i,0], dtype = np.uint8))
     return imgs_equalized
 
-
 # ===== normalize over the dataset
 def dataset_normalized(imgs):
     assert (len(imgs.shape)==4)  #4D arrays
@@ -76,10 +67,10 @@ def adjust_gamma(imgs, gamma=1.0):
         new_imgs[i,0] = cv2.LUT(np.array(imgs[i,0], dtype = np.uint8), table)
     return new_imgs
 
-
-#My pre processing (use for both training and testing!)
+#My pre processing 
 def my_PreProc(img_path,save_path,idx):
-    data = readImg(img_path)
+    data = np.asarray(Image.open(img_path)) 
+    data = np.flip(data,axis=2)  # BGR to RGB
     data = np.expand_dims(data,axis=0)
     data = np.transpose(data,(0,3,1,2))
     assert(len(data.shape)==4)

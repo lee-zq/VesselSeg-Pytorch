@@ -45,14 +45,11 @@ def save_args(args,save_path):
     print('Config info -----')
     for arg in vars(args):
         print('%s: %s' % (arg, getattr(args, arg)))
-    print('-----------------')
-
     with open('%s/args.txt' % save_path, 'w') as f:
         for arg in vars(args):
             print('%s: %s' % (arg, getattr(args, arg)), file=f)
-
     joblib.dump(args, '%s/args.pkl' % save_path)
-    print('config infomation has been saved')
+    print('\033[0;33m================config infomation has been saved=================\033[0m')
 
 
 def setpu_seed(seed):

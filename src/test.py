@@ -88,21 +88,21 @@ class Test_on_testSet():
         self.save_img_path = join(self.path_experiment,'result_img')
         if not os.path.exists(join(self.save_img_path)):
             os.makedirs(self.save_img_path)
-        # self.test_imgs = my_PreProc(self.test_imgs) # 若以预处理后的图像输出，则取消注释
+        # self.test_imgs = my_PreProc(self.test_imgs) # Uncomment to save the pre processed image
         for i in range(self.test_imgs.shape[0]):
             total_img = concat_result(self.test_imgs[i],self.pred_imgs[i],self.test_masks[i])
-            visualize(total_img,self.save_img_path +"/img_prob_bin_gt_"+img_name_list[i]+'.png')
+            visualize(total_img,join(self.save_img_path, "img_prob_bin_gt_"+img_name_list[i]+'.png'))
 
 
 if __name__ == '__main__':
     args = parse_args()
-    args.save = 'test'
+    args.save = 'test66'
     save_path = join(args.outf, args.save)
     sys.stdout = Print_Logger(os.path.join(save_path, 'test_log.txt'))
+    device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     # net = models.denseunet.Dense_Unet(1,2,filters=64)
-    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16)
-    net.cuda()
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     cudnn.benchmark = True
 
     # Load checkpoint

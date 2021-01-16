@@ -5,43 +5,94 @@ import configparser
 from .help_functions import visualize
 from .common import readImg
 from .pre_processing import my_PreProc
+from .help_functions import group_images
 
+#=================Load imgs from disk with txt files=====================================
+def load_file_path_txt(file_path):
+    img_list = []
+    gt_list = []
+    fov_list = []
+    with open(file_path, 'r') as file_to_read:
+        while True:
+            lines = file_to_read.readline().strip()  # 整行读取数据
+            if not lines:
+                break
+            img,gt,fov = lines.split(' ')
+            img_list.append(img)
+            gt_list.append(gt)
+            fov_list.append(fov)
+    return img_list,gt_list,fov_list
 
-#=======================================================================================================
+def load_data(data_path_list_file):
+    print('\033[0;33mload data from {} \033[0m'.format(data_path_list_file))
+    img_list, gt_list, fov_list = load_file_path_txt(data_path_list_file)
+    imgs = None
+    groundTruth = None
+    FOVs = None
+    for i in range(len(img_list)): #list all files, directories in the path
+        #original
+        img = np.asarray(readImg(img_list[i]))
+        gt = np.asarray(readImg(gt_list[i]))
+        if len(gt.shape)==3:
+            gt = gt[:,:,0]
+        fov = np.asarray(readImg(fov_list[i]))
+        if len(fov.shape)==3:
+            fov = fov[:,:,0]
+
+        imgs = np.expand_dims(img,0) if imgs is None else np.concatenate((imgs,np.expand_dims(img,0)))
+        groundTruth = np.expand_dims(gt,0) if groundTruth is None else np.concatenate((groundTruth,np.expand_dims(gt,0)))
+        FOVs = np.expand_dims(fov,0) if FOVs is None else np.concatenate((FOVs,np.expand_dims(fov,0)))
+    
+    assert(np.min(FOVs)==0 and np.max(FOVs)==255)
+    assert((np.min(groundTruth)==0 and (np.max(groundTruth)==255 or np.max(groundTruth)==1))) # CHASE_DB1数据集GT图像为单通道二值（0和1）图像
+    if np.max(groundTruth)==1:
+        print("\033[0;31m Single channel binary image is multiplied by 255 \033[0m")
+        groundTruth = groundTruth * 255
+
+    #reshaping for my standard tensors
+    imgs = np.transpose(imgs,(0,3,1,2))
+    groundTruth = np.expand_dims(groundTruth,1)
+    FOVs = np.expand_dims(FOVs,1)
+    print('ori data shape < ori_imgs:{} GTs:{} FOVs:{}'.format(imgs.shape,groundTruth.shape,FOVs.shape))
+    print("imgs pixel range %s-%s: " %(str(np.min(imgs)),str(np.max(imgs))))
+    print("GTs pixel range %s-%s: " %(str(np.min(groundTruth)),str(np.max(groundTruth))))
+    print("FOVs pixel range %s-%s: " %(str(np.min(FOVs)),str(np.max(FOVs))))
+    print("==================data have loaded======================")
+    return imgs, groundTruth, FOVs
+
+#==============================Load train data==============================================
 #Load the original data and return the extracted patches for training/testing
-def get_data_train(data_path_list,
-                      patch_height,
-                      patch_width,
-                      N_patches,
-                      inside_FOV):
+def get_data_train(data_path_list,patch_height,patch_width,N_patches,inside_FOV):
     train_imgs_original, train_masks, train_FOVs = load_data(data_path_list)
-    # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train')#.show()  #check original imgs train
+    # visualize(group_images(train_imgs_original[0:20,:,:,:],5),'imgs_train.png')#.show()  #check original imgs train
 
     train_imgs = my_PreProc(train_imgs_original)
     train_masks = train_masks/255.
     train_FOVs = train_FOVs//255
+    
+    # Crop edge (optional)
+    # train_imgs = train_imgs[:,:,9:-9,9:-9]   
+    # train_masks = train_masks[:,:,9:-9,9:-9]
+    # train_FOVs = train_FOVs[:,:,9:-9,9:-9]
 
-    train_imgs = train_imgs[:,:,9:-9,9:-9]  # cut bottom and top so now it is 565*565
-    train_masks = train_masks[:,:,9:-9,9:-9]  # 针对不同的数据集，建议改变这里的crop范围或者去掉裁剪亦可
-
-    data_dim_check(train_imgs,train_masks)  # 检查维度是否正确
+    # Check that the dimensions are correct
+    data_dim_check(train_imgs,train_masks)  
     assert(np.min(train_masks)==0 and np.max(train_masks)==1)
     assert(np.min(train_FOVs)==0 and np.max(train_FOVs)==1)
     #check masks are within 0-1
-    print("\ntrain images/masks shape: ", train_imgs.shape)
-    print("train images range (min-max): " +str(np.min(train_imgs)) +' - '+str(np.max(train_imgs)))
+    print("\nTrain images shape: {}, vaule range ({} - {}):"\
+        .format(train_imgs.shape, str(np.min(train_imgs)), str(np.max(train_imgs))))
 
     #extract the TRAINING patches from the full images
     patches_imgs_train, patches_masks_train = extract_random(train_imgs,train_masks,train_FOVs,patch_height,patch_width,N_patches,inside_FOV)
     data_dim_check(patches_imgs_train, patches_masks_train)
 
-    print("train PATCHES images/masks shape: ",patches_imgs_train.shape)
-    print("train PATCHES images range (min-max): " +str(np.min(patches_imgs_train)) +' - '+str(np.max(patches_imgs_train)))
+    print("train patches shape: {}, value range ({} - {})"\
+        .format(patches_imgs_train.shape, str(np.min(patches_imgs_train)), str(np.max(patches_imgs_train))))
 
-    return patches_imgs_train, patches_masks_train#, patches_imgs_test, patches_masks_test
+    return patches_imgs_train, patches_masks_train
 
 #extract patches randomly in the full training images
-#  -- Inside OR in full image
 def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, inside=True):
 
     patches = np.empty((N_patches,full_imgs.shape[1],patch_h,patch_w))
@@ -69,7 +120,6 @@ def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, i
             patches_masks[iter_tot]=patch_mask
             iter_tot +=1   #total
             k+=1  #per full_img
-        # print("test最后一个采样点：",x_center,y_center)
     return patches, patches_masks
 
 # check if the patch is fully contained in the FOV  
@@ -92,7 +142,7 @@ def data_dim_check(imgs,masks):
     assert(masks.shape[1]==1)
     assert(imgs.shape[1]==1 or imgs.shape[1]==3)
 
-# ============================================================================================================
+# =============================Load test data==========================================
 # Load the original data and return the extracted patches for testing
 # return the ground truth in its original shape
 def get_data_test_overlap(test_data_path_list, patch_height, patch_width, stride_height, stride_width):
@@ -108,19 +158,16 @@ def get_data_test_overlap(test_data_path_list, patch_height, patch_width, stride
     #check masks are within 0-1
     assert(np.max(test_masks)==1  and np.min(test_masks)==0)
 
-    print("\ntest images shape:",test_imgs.shape)
-    print("\ntest mask shape:",test_masks.shape)
-
-    print("test images range (min-max): " +str(np.min(test_imgs)) +' - '+str(np.max(test_imgs)))
+    print("\nTest images shape: {}, vaule range ({} - {}):"\
+        .format(test_imgs.shape, str(np.min(test_imgs)), str(np.max(test_imgs))))
 
     #extract the TEST patches from the full images
     patches_imgs_test = extract_ordered_overlap(test_imgs,patch_height,patch_width,stride_height,stride_width)
 
-    print("\ntest PATCHES images shape: ", patches_imgs_test.shape)
-    print("test PATCHES images range (min-max): " +str(np.min(patches_imgs_test)) +' - '+str(np.max(patches_imgs_test)))
+    print("test patches shape: {}, value range ({} - {})"\
+        .format(patches_imgs_test.shape, str(np.min(patches_imgs_test)), str(np.max(patches_imgs_test))))
 
     return patches_imgs_test, test_imgs_original, test_masks, test_FOVs, test_imgs.shape[2], test_imgs.shape[3]
-
 
 def paint_border_overlap(full_imgs, patch_h, patch_w, stride_h, stride_w):
     assert (len(full_imgs.shape)==4)  #4D arrays
@@ -145,7 +192,7 @@ def paint_border_overlap(full_imgs, patch_h, patch_w, stride_h, stride_w):
         tmp_full_imgs = np.zeros((full_imgs.shape[0],full_imgs.shape[1],full_imgs.shape[2],img_w+(stride_w - leftover_w)))
         tmp_full_imgs[0:full_imgs.shape[0],0:full_imgs.shape[1],0:full_imgs.shape[2],0:img_w] = full_imgs
         full_imgs = tmp_full_imgs
-    print("new full images shape: \n" +str(full_imgs.shape))
+    print("new full images shape: " +str(full_imgs.shape))
     return full_imgs
 
 #Divide all the full_imgs in pacthes
@@ -243,52 +290,3 @@ def pixel_inside_FOV(i, x, y, FOVs):
         return False
     return FOVs[i,0,y,x]>0 #0==black pixels
 
-#---------------------load data path list-------------------------------------
-def load_file_path_txt(file_path):
-    img_list = []
-    gt_list = []
-    fov_list = []
-    with open(file_path, 'r') as file_to_read:
-        while True:
-            lines = file_to_read.readline().strip()  # 整行读取数据
-            if not lines:
-                break
-            img,gt,fov = lines.split(' ')
-            img_list.append(img)
-            gt_list.append(gt)
-            fov_list.append(fov)
-    return img_list,gt_list,fov_list
-
-def load_data(data_path_list_file):
-    img_list, gt_list, fov_list = load_file_path_txt(data_path_list_file)
-    imgs = None
-    groundTruth = None
-    FOVs = None
-    for i in range(len(img_list)): #list all files, directories in the path
-        #original
-        img = np.asarray(readImg(img_list[i]))
-        gt = np.asarray(readImg(gt_list[i]))
-        if len(gt.shape)==3:
-            gt = gt[:,:,0]
-        fov = np.asarray(readImg(fov_list[i]))
-        if len(fov.shape)==3:
-            fov = fov[:,:,0]
-
-        imgs = np.expand_dims(img,0) if imgs is None else np.concatenate((imgs,np.expand_dims(img,0)))
-        groundTruth = np.expand_dims(gt,0) if groundTruth is None else np.concatenate((groundTruth,np.expand_dims(gt,0)))
-        FOVs = np.expand_dims(fov,0) if FOVs is None else np.concatenate((FOVs,np.expand_dims(fov,0)))
-    
-    print("imgs min-max: ",str(np.min(imgs)),str(np.max(imgs)))
-    print("gts min-max: ",str(np.min(groundTruth)),str(np.max(groundTruth)))
-    print("fov min-max: ",str(np.min(FOVs)),str(np.max(FOVs)))
-    assert(np.min(FOVs)==0 and np.max(FOVs)==255) # 三个数据集的FOV应该为0和255
-    assert((np.min(groundTruth)==0 and (np.max(groundTruth)==255 or np.max(groundTruth)==1))) # CHASE_DB1数据集GT图像为单通道二值（0和1）图像
-    if np.max(groundTruth)==1:
-        print("\033[0;31m Single channel binary image is multiplied by 255 \033[0m")
-        groundTruth = groundTruth * 255
-    #reshaping for my standard tensors
-    imgs = np.transpose(imgs,(0,3,1,2))
-    groundTruth = np.expand_dims(groundTruth,1)
-    FOVs = np.expand_dims(FOVs,1)
-    print('data shape:',imgs.shape,groundTruth.shape,FOVs.shape)
-    return imgs, groundTruth, FOVs

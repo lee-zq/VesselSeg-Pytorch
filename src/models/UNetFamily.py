@@ -424,7 +424,9 @@ class R2AttU_Net(nn.Module):
         return d1
 
 if __name__ == '__main__':
+    # test network forward
     net = AttU_Net(1,2).cuda()
+    print(net)
     in1 = torch.randn((4,1,48,48)).cuda()
     out1 = net(in1)
     print(out1.size())

@@ -3,15 +3,12 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-def cuda(x):
-    return x.cuda() if torch.cuda.is_available() else x
 
 
 class LossMulti:
     def __init__(self, jaccard_weight=0, class_weights=None, num_classes=1):
         if class_weights is not None:
-            nll_weight = cuda(
-                torch.from_numpy(class_weights.astype(np.float32)))
+            nll_weight = torch.from_numpy(class_weights.astype(np.float32)).cuda()
         else:
             nll_weight = None
         self.nll_loss = nn.NLLLoss(weight=nll_weight)  # 未融合softmax

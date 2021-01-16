@@ -41,10 +41,10 @@ def get_dataloader(args):
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
                               shuffle=False, num_workers=6)
     # Save a sample of what you're feeding to the neural network
-    N_sample = min(patches_imgs_train.shape[0], 200)
-    visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 20),
+    N_sample = min(patches_imgs_train.shape[0], 100)
+    visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 10),
               args.outf + args.save + '/' + "sample_input_imgs")
-    visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 20),
+    visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 10),
               args.outf + args.save + '/' + "sample_input_masks")
     return train_loader,val_loader
 
@@ -121,7 +121,7 @@ def main():
     if args.pre_trained is not None:
         # Load checkpoint.
         print('==> Resuming from checkpoint..')
-        checkpoint = torch.load('../experiments/%s/latest_model.pth' % args.pre_trained)
+        checkpoint = torch.load('./experiments/%s/latest_model.pth' % args.pre_trained)
         net.load_state_dict(checkpoint['net'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         args.start_epoch = checkpoint['epoch']+1

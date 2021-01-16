@@ -3,6 +3,10 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import f1_score
+import os
+import torch
+from os.path import join
+from collections import OrderedDict
 # help_functions.py
 from lib.help_functions import *
 import matplotlib.pylab as pylab
@@ -13,10 +17,6 @@ params = {'legend.fontsize': 13,
          'ytick.labelsize':15} # define pyplot parameters
 pylab.rcParams.update(params)
 #Area under the ROC curve
-import os
-import torch
-from os.path import join
-from collections import OrderedDict
 
 class Evaluate():
     def __init__(self,save_path=None):
@@ -66,15 +66,7 @@ class Evaluate():
             plt.savefig(join(self.save_path ,"Precision_recall.png"))
         return AUC_pr
     def confusion_matrix(self):
-
         #Confusion matrix
-        # print("\nConfusion matrix: " +str(threshold_confusion))
-        # y_pred = np.empty((self.output.shape[0]))
-        # for i in range(self.output.shape[0]):
-        #     if self.output[i]>=threshold_confusion:
-        #         y_pred[i]=1
-        #     else:
-        #         y_pred[i]=0
         y_pred = self.output>=self.threshold_confusion
         confusion = confusion_matrix(self.target, y_pred)
         # print(confusion)

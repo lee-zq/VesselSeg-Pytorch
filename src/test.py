@@ -10,7 +10,7 @@ import os
 import argparse
 from lib.logger import Logger, Print_Logger
 # extract_patches.py
-from lib.extract_patches import recompone_overlap, kill_border, pred_only_in_FOV, get_data_test_overlap
+from lib.extract_patches import *
 # pre_processing.py
 from os.path import join
 from lib.dataset import TestDataset
@@ -26,7 +26,7 @@ class Test_on_testSet():
         self.args = args
         assert (args.stride_height <= args.patch_height and args.stride_width <= args.patch_width)
         # save path
-        self.path_experiment = args.outf + args.save +'/'
+        self.path_experiment = join(args.outf, args.save)
 
         self.patches_imgs_test, self.test_imgs, self.test_masks, self.test_FOVs, self.new_height, self.new_width = get_data_test_overlap(
             test_data_path_list = args.test_data_path_list,
@@ -70,38 +70,40 @@ class Test_on_testSet():
         eval.add_batch(y_true,y_scores)
         log = eval.save_all_result(plot_curve=True)
         # save labels and probs for plot ROC and PR curve when k-fold Cross-validation
-        np.save('{}result.npy'.format(self.path_experiment),np.asarray([y_true,y_scores]))
+        np.save('{}pred_result.npy'.format(self.path_experiment),np.asarray([y_true,y_scores]))
 
         return dict_round(log,6)
 
     #保存结果图
     def save_segmentation_result(self):
+        img_path_list, _, _ = load_file_path_txt(self.args.test_data_path_list)
+        img_name_list = [item.split('/')[-1].split('.')[0] for item in img_path_list]
+
         kill_border(self.pred_imgs, self.test_FOVs) # only for visualization
         self.save_img_path = join(self.path_experiment,'result_img')
         if not os.path.exists(join(self.save_img_path)):
             os.makedirs(self.save_img_path)
-        # self.test_imgs = my_PreProc(self.test_imgs)
+        # self.test_imgs = my_PreProc(self.test_imgs) # 若以预处理后的图像输出，则取消注释
         for i in range(self.test_imgs.shape[0]):
             total_img = concat_result(self.test_imgs[i],self.pred_imgs[i],self.test_masks[i])
-            visualize(total_img,self.save_img_path +"/Original_GroundTruth_Prediction"+str(i))
+            visualize(total_img,self.save_img_path +"/img_prob_bin_gt_"+img_name_list[i])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--outf', default='../experiments/', help='trained model will be saved at here')
-    parser.add_argument('--test_data_path_list', default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+    parser.add_argument('--outf', default='/ssd/lzq/projects/vesselseg/experiments', help='trained model will be saved at here')
+    parser.add_argument('--test_data_path_list', default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/CHASEDB1/test.txt')
 
     parser.add_argument('--patch_height', default=96)
     parser.add_argument('--patch_width', default=96)
     parser.add_argument('--batch_size', default=32, type=int,help='batch size')
     # testing
-    parser.add_argument('--average_mode', default=True)
     parser.add_argument('--stride_height', default=8)
     parser.add_argument('--stride_width', default=8)
 
     parser.add_argument('--save',default='test', help='save path name')
     # hardware setting
     args = parser.parse_args()
-    sys.stdout = Print_Logger(os.path.join('../experiments/',args.save,'test_log.txt'))
+    sys.stdout = Print_Logger(os.path.join(args.outf,args.save,'test_log.txt'))
     # net = models.denseunet.Dense_Unet(1,2,filters=64)
     net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16)
     net.cuda()
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     cudnn.benchmark = True
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
-    checkpoint = torch.load(join('../experiments/', args.save, 'best_model.pth'))
+    checkpoint = torch.load(join(args.outf, args.save, 'best_model.pth'))
     # checkpoint = torch.load(join('./output/', args.save, 'latest_model.pth'))
     net.load_state_dict(checkpoint['net'])
 

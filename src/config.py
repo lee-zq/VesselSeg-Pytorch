@@ -5,7 +5,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # in/out
-    parser.add_argument('--outf', default='../experiments/', help='trained model will be saved at here')
+    parser.add_argument('--outf', default='/ssd/lzq/projects/vesselseg/experiments/', help='trained model will be saved at here')
     parser.add_argument('--save',default='test', help='save path name')
 
     # data

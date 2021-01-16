@@ -3,7 +3,6 @@ import random
 import configparser
 
 from .help_functions import visualize
-from .help_functions import group_images
 from .common import readImg
 from .pre_processing import my_PreProc
 
@@ -75,7 +74,7 @@ def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, i
 
 # check if the patch is fully contained in the FOV  
 # 检查训练样本块是在在FOV区域内,center模式检查patch中心像素点是否在fov内，all模式检查patch所有像素是否都在fov内
-def is_patch_inside_FOV(x,y,fov_img,patch_h,patch_w,mode):
+def is_patch_inside_FOV(x,y,fov_img,patch_h,patch_w,mode='center'):
     if mode == 'center':
         return fov_img[y,x]
     elif mode == 'all':
@@ -206,7 +205,7 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     return final_avg
 
 #return only the pixels contained in the FOV, for both images and masks
-def pred_only_in_FOV(data_imgs,data_masks,original_imgs_border_masks):
+def pred_only_in_FOV(data_imgs,data_masks,FOVs):
     assert (len(data_imgs.shape)==4 and len(data_masks.shape)==4)  #4D arrays
 
     height = data_imgs.shape[2]
@@ -216,7 +215,7 @@ def pred_only_in_FOV(data_imgs,data_masks,original_imgs_border_masks):
     for i in range(data_imgs.shape[0]):  #loop over the full images
         for x in range(width):
             for y in range(height):
-                if pixel_inside_FOV(i,x,y,original_imgs_border_masks):
+                if pixel_inside_FOV(i,x,y,FOVs):
                     new_pred_imgs.append(data_imgs[i,:,y,x])
                     new_pred_masks.append(data_masks[i,:,y,x])
     new_pred_imgs = np.asarray(new_pred_imgs)
@@ -224,7 +223,7 @@ def pred_only_in_FOV(data_imgs,data_masks,original_imgs_border_masks):
     return new_pred_imgs, new_pred_masks
 
 #function to set to black everything outside the FOV, in a full image
-def kill_border(data, original_imgs_border_masks):
+def kill_border(data, FOVs):
     assert (len(data.shape)==4)  #4D arrays
     assert (data.shape[1]==1 or data.shape[1]==3)  #check the channel is 1 or 3
     height = data.shape[2]
@@ -232,7 +231,7 @@ def kill_border(data, original_imgs_border_masks):
     for i in range(data.shape[0]):  #loop over the full images
         for x in range(width):
             for y in range(height):
-                if not pixel_inside_FOV(i,x,y,original_imgs_border_masks):
+                if not pixel_inside_FOV(i,x,y,FOVs):
                     data[i,:,y,x]=0.0
 
 # function to judge pixel(x,y) in FOV or not
@@ -264,29 +263,31 @@ def load_data(data_path_list_file):
     img_list, gt_list, fov_list = load_file_path_txt(data_path_list_file)
     imgs = None
     groundTruth = None
-    border_masks = None
+    FOVs = None
     for i in range(len(img_list)): #list all files, directories in the path
-            #original
-            img = np.asarray(readImg(img_list[i]))
-            gt = np.asarray(readImg(gt_list[i]))
-            if len(gt.shape)==3:
-                gt = gt[:,:,0]
-            fov = np.asarray(readImg(fov_list[i]))
-            if len(fov.shape)==3:
-                fov = fov[:,:,0]
+        #original
+        img = np.asarray(readImg(img_list[i]))
+        gt = np.asarray(readImg(gt_list[i]))
+        if len(gt.shape)==3:
+            gt = gt[:,:,0]
+        fov = np.asarray(readImg(fov_list[i]))
+        if len(fov.shape)==3:
+            fov = fov[:,:,0]
 
-            imgs = np.expand_dims(img,0) if imgs is None else np.concatenate((imgs,np.expand_dims(img,0)))
-            groundTruth = np.expand_dims(gt,0) if groundTruth is None else np.concatenate((groundTruth,np.expand_dims(gt,0)))
-            border_masks = np.expand_dims(fov,0) if border_masks is None else np.concatenate((border_masks,np.expand_dims(fov,0)))
+        imgs = np.expand_dims(img,0) if imgs is None else np.concatenate((imgs,np.expand_dims(img,0)))
+        groundTruth = np.expand_dims(gt,0) if groundTruth is None else np.concatenate((groundTruth,np.expand_dims(gt,0)))
+        FOVs = np.expand_dims(fov,0) if FOVs is None else np.concatenate((FOVs,np.expand_dims(fov,0)))
     
-    print("imgs max: " +str(np.max(imgs)))
-    print("imgs min: " +str(np.min(imgs)))
-    assert(np.max(groundTruth)==255 and np.max(border_masks)==255)
-    assert(np.min(groundTruth)==0 and np.min(border_masks)==0)
-    print("ground truth and border masks are correctly withih pixel value range 0-255 (black-white)")
+    print("imgs min-max: ",str(np.min(imgs)),str(np.max(imgs)))
+    print("gts min-max: ",str(np.min(groundTruth)),str(np.max(groundTruth)))
+    print("fov min-max: ",str(np.min(FOVs)),str(np.max(FOVs)))
+    assert(np.min(FOVs)==0 and np.max(FOVs)==255) # 三个数据集的FOV应该为0和255
+    assert((np.min(groundTruth)==0 and (np.max(groundTruth)==255 or np.max(groundTruth)==1))) # CHASE_DB1数据集GT图像为单通道二值（0和1）图像
+    if np.max(groundTruth)==1:
+        groundTruth = groundTruth * 255
     #reshaping for my standard tensors
     imgs = np.transpose(imgs,(0,3,1,2))
     groundTruth = np.expand_dims(groundTruth,1)
-    border_masks = np.expand_dims(border_masks,1)
-    print('data shape:',imgs.shape,groundTruth.shape,border_masks.shape)
-    return imgs, groundTruth, border_masks
+    FOVs = np.expand_dims(FOVs,1)
+    print('data shape:',imgs.shape,groundTruth.shape,FOVs.shape)
+    return imgs, groundTruth, FOVs

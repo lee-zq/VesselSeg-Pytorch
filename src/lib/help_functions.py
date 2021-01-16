@@ -22,8 +22,6 @@ def group_images(data,per_row):
 
 def concat_result(ori_img,pred_res,gt):
     ori_img = data = np.transpose(ori_img,(1,2,0))
-    # BGR to RGB (三个数据集可能不一致，看可视化结果决定)
-    ori_img = np.flip(ori_img,2)
     pred_res = data = np.transpose(pred_res,(1,2,0))
     gt = data = np.transpose(gt,(1,2,0))
     # 预测二值图

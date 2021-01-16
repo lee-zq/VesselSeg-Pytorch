@@ -4,30 +4,8 @@ import torch,random
 import torch.nn as nn
 import cv2,imageio,PIL
 
-# def readImg(im_fn):
-#     """
-#     由于读取数据集图像数据时，彩色图片通道顺序和读取方式有关，所以需要重写readImg方法
-#     """
-#     img = cv2.imread(im_fn, IMREAD_UNCHANGED = -1) # BGR mode
-#     img = np.flip(img,axis=2)
-#     if img is None :
-#         tmp = imageio.mimread(im_fn) # RGB mode
-#         if tmp is not None:
-#             imt = np.array(tmp)
-#             img = imt[0] # mask和gt是灰度图，取单通道
-#             #  _, im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY) #单通道不需要二值化处理，只有test中2nd_manual是四通道，暂时不考虑
-#     # print('loading image ：', im_fn)
-#     return img
-
-def readImg(img_path):
-    img = PIL.Image.open(img_path)
-    if img is None :
-        tmp = imageio.mimread(im_fn) # RGB mode
-        if tmp is not None:
-            imt = np.array(tmp)
-            img = imt[0] # mask和gt是灰度图，取单通道
-            #  _, im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY) #单通道不需要二值化处理，只有test中2nd_manual是四通道，暂时不考虑
-    # print('loading image ：', im_fn)
+def readImg(im_fn):
+    img = PIL.Image.open(im_fn) # BGR mode
     return img
 
 def count_parameters(model):

@@ -3,8 +3,6 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-
 class LossMulti:
     def __init__(self, jaccard_weight=0, class_weights=None, num_classes=1):
         if class_weights is not None:

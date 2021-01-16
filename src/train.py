@@ -22,13 +22,13 @@ import models
 def get_dataloader(args):
     patches_imgs_train, patches_masks_train = get_data_train(
         data_path_list = args.train_data_path_list,
-        patch_height = args.patch_height,
-        patch_width = args.patch_width,
+        patch_height = args.train_patch_height,
+        patch_width = args.train_patch_width,
         N_patches = args.N_patches,
         inside_FOV = args.inside_FOV #select the patches only inside the FOV  (default == False)
     )
 
-    val_ind = random.sample(range(patches_masks_train.shape[0]),int(np.floor(args.val_portion*patches_masks_train.shape[0])))
+    val_ind = random.sample(range(patches_masks_train.shape[0]),int(np.floor(args.val_ratio*patches_masks_train.shape[0])))
 
     train_ind =  set(range(patches_masks_train.shape[0])) - set(val_ind)
     train_ind = list(train_ind)
@@ -39,13 +39,13 @@ def get_dataloader(args):
 
     val_set = TrainDataset(patches_imgs_train[val_ind,...],patches_masks_train[val_ind,...],mode="val")
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
-                              shuffle=False, num_workers=6)
+                            shuffle=False, num_workers=6)
     # Save a sample of what you're feeding to the neural network
     N_sample = min(patches_imgs_train.shape[0], 100)
     visualize(group_images(patches_imgs_train[0:N_sample, :, :, :], 10),
-              args.outf + args.save + '/' + "sample_input_imgs")
+              join(args.outf, args.save, "sample_input_imgs.png"))
     visualize(group_images(patches_masks_train[0:N_sample, :, :, :], 10),
-              args.outf + args.save + '/' + "sample_input_masks")
+              join(args.outf, args.save,"sample_input_masks.png"))
     return train_loader,val_loader
 
 def train(train_loader,net,criterion,optimizer,device):
@@ -71,7 +71,6 @@ def val(val_loader,net,criterion,device):
     val_loss = AverageMeter()
     evaluater = Evaluate()
     with torch.no_grad():
-
         for batch_idx, (inputs, targets) in tqdm(enumerate(val_loader), total=len(val_loader)):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
@@ -87,7 +86,7 @@ def val(val_loader,net,criterion,device):
     return log
 
 def main():
-    setpu_seed(222)
+    setpu_seed(2021)
     args = parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
@@ -97,14 +96,21 @@ def main():
     log = Logger(save_path)
     sys.stdout = Print_Logger(os.path.join(save_path,'train_log.txt'))
 
-    # net = models.UNetFamily.R2AttU_Net(1,2)
-    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16)
+    # net = models.UNetFamily.R2AttU_Net(1,2).to(device)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
-    net.to(device)
-    # torch.nn.init.kaiming_normal(net, mode='fan_out')      # 修改默认初始化方法
+    log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file
+    # torch.nn.init.kaiming_normal(net, mode='fan_out')      # Modify default initialization method
     # net.apply(weight_init)
-    # net = torch.nn.DataParallel(net, device_ids=[0,1])
-    log.save_graph(net,torch.randn((1,1,48,48)).to(device=device))  # 保存模型结构到tensorboard文件
+
+    # The training speed of this task is fast, so pre training is not recommended
+    if args.pre_trained is not None:
+        # Load checkpoint.
+        print('==> Resuming from checkpoint..')
+        checkpoint = torch.load(args.outf + '%s/latest_model.pth' % args.pre_trained)
+        net.load_state_dict(checkpoint['net'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        args.start_epoch = checkpoint['epoch']+1
 
     criterion = LossMulti(jaccard_weight=0,class_weights=np.array([0.5,0.5]))
     # criterion = CrossEntropy2d()
@@ -118,19 +124,11 @@ def main():
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
-    if args.pre_trained is not None:
-        # Load checkpoint.
-        print('==> Resuming from checkpoint..')
-        checkpoint = torch.load('./experiments/%s/latest_model.pth' % args.pre_trained)
-        net.load_state_dict(checkpoint['net'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
-        args.start_epoch = checkpoint['epoch']+1
-
+    train_loader, val_loader = get_dataloader(args) 
     # eval_tool = Val_on_testSet(args)
-    best = [0,0] # 初始化最优模型的epoch和performance
+    best = {'epoch':0,'AUC':0.5} # Initialize the best epoch and performance(AUC)
     trigger = 0  # early stop 计数器
     for epoch in range(args.start_epoch,args.N_epochs+1):
-        train_loader, val_loader = get_dataloader(args)        
         print('\nEPOCH: %d/%d --(learn_rate:%.6f)' % ((epoch), args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr']))
 
         train_log = train(train_loader,net,criterion, optimizer,device)
@@ -140,23 +138,22 @@ def main():
         log.update(epoch,train_log,val_log)
         lr_scheduler.step()
 
-        # Save checkpoint.
+        # Save checkpoint of latest and best model.
         state = {'net': net.state_dict(),'optimizer':optimizer.state_dict(),'epoch': epoch}
         torch.save(state, join(save_path, 'latest_model.pth'))
         trigger += 1
-        if val_log['val_auc_roc'] > best[1]:
+        if val_log['val_auc_roc'] > best['AUC']:
             print('Saving best model')
             torch.save(state, join(save_path, 'best_model.pth'))
-            best[0] = epoch
-            best[1] = val_log['val_auc_roc']
+            best['epoch'] = epoch
+            best['AUC'] = val_log['val_auc_roc']
             trigger = 0
-        print('Best performance at Epoch: {} | {}'.format(best[0],best[1]))
+        print('Get best performance at Epoch: {} | AUC: {}'.format(best['epoch'],best['AUC']))
         # early stopping
         if not args.early_stop is None:
             if trigger >= args.early_stop:
                 print("=> early stopping")
                 break
-
         torch.cuda.empty_cache()
 if __name__ == '__main__':
     main()

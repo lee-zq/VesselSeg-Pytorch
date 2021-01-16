@@ -43,31 +43,13 @@ def visualize(data,filename):
     if data.shape[2]==1:  #in case it is black and white
         data = np.reshape(data,(data.shape[0],data.shape[1]))
     img = Image.fromarray(data.astype(np.uint8))  #the image is between 0-1
-    img.save(filename + '.png')
+    img.save(filename)
     return img
 
-def pred_to_imgs(pred, patch_height, patch_width, mode="original"):
-    assert (len(pred.shape)==3)  #3D array: (Npatches,height*width,2)
+def pred_to_imgs(pred, patch_height, patch_width):
+    assert (len(pred.shape)==3)  #3D array: (N_patches,height*width,2)
     assert (pred.shape[2]==2 )  #check the classes are 2
-    pred_images = np.empty((pred.shape[0],pred.shape[1]))  #(Npatches,height*width)
-    if mode=="original":
-        for i in range(pred.shape[0]):
-            for pix in range(pred.shape[1]):
-                pred_images[i,pix]=pred[i,pix,1]
-    elif mode=='prob':
-        pred_images = pred[:, :, 1]
-    elif mode=="threshold":
-        for i in range(pred.shape[0]):
-            for pix in range(pred.shape[1]):
-                if pred[i,pix,1]>=0.5:
-                    pred_images[i,pix]=1
-                else:
-                    pred_images[i,pix]=0
-    else:
-        print("mode " +str(mode) +" not recognized, it can be 'original' or 'threshold'")
-        exit()
 
-    # assert (pred_images== pred_lzq).all() , 'not equeal hhhhhhh'
-
+    pred_images = pred[:, :, 1]
     pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
     return pred_images

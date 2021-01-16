@@ -51,7 +51,7 @@ def extract_random(full_imgs,full_masks,full_FOVs, patch_h,patch_w, N_patches, i
     # (0,0) in the center of the image
     patch_per_img = int(N_patches/full_imgs.shape[0])  #N_patches equally divided in the full images
     if (N_patches%full_imgs.shape[0] != 0):
-        Warning("Recommended N_patches be set as a multiple of train img numbers")
+        print("\033[0;31mRecommended N_patches be set as a multiple of train img numbers\033[0m")
     print("patches per image: " +str(patch_per_img))
     iter_tot = 0   #iter over the total numbe rof patches (N_patches)
     for i in range(full_imgs.shape[0]):  #loop over the full images
@@ -81,7 +81,7 @@ def is_patch_inside_FOV(x,y,fov_img,patch_h,patch_w,mode='center'):
         fov_patch = fov_img[y-int(patch_h/2):y+int(patch_h/2),x-int(patch_w/2):x+int(patch_w/2)]
         return fov_patch.all()
     else:
-        raise ValueError("mode is incurrent!")
+        raise ValueError("\033[0;31mmode is incurrent!\033[0m")
 
 #data consinstency check
 def data_dim_check(imgs,masks):
@@ -284,6 +284,7 @@ def load_data(data_path_list_file):
     assert(np.min(FOVs)==0 and np.max(FOVs)==255) # 三个数据集的FOV应该为0和255
     assert((np.min(groundTruth)==0 and (np.max(groundTruth)==255 or np.max(groundTruth)==1))) # CHASE_DB1数据集GT图像为单通道二值（0和1）图像
     if np.max(groundTruth)==1:
+        print("\033[0;31m Single channel binary image is multiplied by 255 \033[0m")
         groundTruth = groundTruth * 255
     #reshaping for my standard tensors
     imgs = np.transpose(imgs,(0,3,1,2))

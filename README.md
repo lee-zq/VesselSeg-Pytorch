@@ -24,6 +24,7 @@ tqdm                      4.54.1
 ```  
 The above environment is successful when running the code of the project. In addition, it is well known that pytorch has very good compatibility (version>=1.0). Thus, I suggest you try to use the existing pytorch environment firstly.
 ### Code structure 
+
 ```
 └── src
     ├── config.py
@@ -82,14 +83,14 @@ The above environment is successful when running the code of the project. In add
     └── train.py
 ```
 ---
-> ## Quick start 
-> >### 1) Datasets preparation 
-> > DRIVE
->
-> >### 2) Training model
-> >Train
->
-> >### 3) Test model
-> >test
+## Quick start 
+>### 1) Datasets preparation 
+> DRIVE
+
+>### 2) Training model
+>Train
+
+>### 3) Test model
+>test
 
 ## Others 

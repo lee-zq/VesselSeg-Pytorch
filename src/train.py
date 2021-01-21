@@ -16,7 +16,7 @@ from lib.logger import Logger, Print_Logger
 from collections import OrderedDict
 from lib.metrics import Evaluate
 import models
-from test import Test_on_testSet
+from test import Test
 
 
 #  Load the data and divided in patches
@@ -81,21 +81,25 @@ def val(val_loader,net,criterion,device):
             outputs = outputs.data.cpu().numpy()
             targets = targets.data.cpu().numpy()
             evaluater.add_batch(targets,outputs[:,1])
-    log = OrderedDict([('val_loss', val_loss.avg), ('val_acc', evaluater.confusion_matrix()[1]), 
-                        ('val_f1', evaluater.f1_score()),('val_auc_roc', evaluater.auc_roc())])
+    log = OrderedDict([('val_loss', val_loss.avg), 
+                       ('val_acc', evaluater.confusion_matrix()[1]), 
+                       ('val_f1', evaluater.f1_score()),
+                       ('val_auc_roc', evaluater.auc_roc())])
     return log
 
 def main():
     setpu_seed(2021)
     args = parse_args()
+    save_path = join(args.outf, args.save)
+    save_args(args,save_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
     cudnn.benchmark = True
-    save_path = join(args.outf, args.save)
-    save_args(args,save_path)
+    
     log = Logger(save_path)
     sys.stdout = Print_Logger(os.path.join(save_path,'train_log.txt'))
-
+    print('The computing device used is: ','GPU' if device.type=='cuda' else 'CPU')
+    
     # net = models.UNetFamily.R2AttU_Net(1,2).to(device)
     net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
@@ -126,7 +130,7 @@ def main():
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
     train_loader, val_loader = get_dataloader(args) 
-    # eval_tool = Test_on_testSet(args) 
+    # eval_tool = Test(args) 
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
     trigger = 0  # early stop 计数器
     for epoch in range(args.start_epoch,args.N_epochs+1):

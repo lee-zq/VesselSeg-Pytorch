@@ -23,7 +23,7 @@ from lib.pre_processing import my_PreProc
 setpu_seed(2020)
 
 
-class Test_on_testSet():
+class Test():
     def __init__(self, args):
         self.args = args
         assert (args.stride_height <=
@@ -96,7 +96,7 @@ class Test_on_testSet():
 
 if __name__ == '__main__':
     args = parse_args()
-    args.save = 'test66'
+    args.save = 'test16'
     save_path = join(args.outf, args.save)
     sys.stdout = Print_Logger(os.path.join(save_path, 'test_log.txt'))
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     checkpoint = torch.load(join(save_path, 'best_model.pth'))
     net.load_state_dict(checkpoint['net'])
 
-    eval = Test_on_testSet(args)
+    eval = Test(args)
     eval.inference(net)
     print(eval.evaluate())
     eval.save_segmentation_result()

@@ -19,7 +19,7 @@ def parse_args():
 
     parser.add_argument('--train_patch_height', default=48)
     parser.add_argument('--train_patch_width', default=48)
-    parser.add_argument('--N_patches', default=40000)
+    parser.add_argument('--N_patches', default=200000)
     parser.add_argument('--inside_FOV', default=True)
     parser.add_argument('--val_ratio', default=0.1)
     # model parameters
@@ -29,7 +29,7 @@ def parse_args():
                         type=int, help='output channels')
 
     # training
-    parser.add_argument('--N_epochs', default=20, type=int,
+    parser.add_argument('--N_epochs', default=50, type=int,
                         help='number of total epochs to run')
     parser.add_argument('--batch_size', default=64,
                         type=int, help='batch size')

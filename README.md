@@ -83,10 +83,13 @@ The above environment is successful when running the code of the project. In add
 ```
 ---
 > ## Quick start 
->>### 1) Datasets preparation 
-
->>### 2) Training model
-
->>### 3) Test model
+> >### 1) Datasets preparation 
+> > DRIVE
+>
+> >### 2) Training model
+> >Train
+>
+> >### 3) Test model
+> >test
 
 ## Others 

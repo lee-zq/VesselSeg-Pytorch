@@ -82,11 +82,11 @@ The above environment is successful when running the code of the project. In add
     └── train.py
 ```
 ---
-## Quick start 
-### 1) Datasets preparation 
+> ## Quick start 
+>>### 1) Datasets preparation 
 
-### 2) Training model
+>>### 2) Training model
 
-### 3) Test model
+>>### 3) Test model
 
-# Others 
+## Others 

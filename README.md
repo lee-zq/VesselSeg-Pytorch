@@ -26,13 +26,15 @@ The above environment is successful when running the code of the project. In add
 
 ---  
 ## Quick start 
->### 1) Datasets preparation 
+### 0) Download Project 
+`git clone https://github.com/lee-zq/VesselSeg-Pytorch.git`  
+### 1) Datasets preparation 
 DRIVE
 
->### 2) Training model
+### 2) Training model
 Train
 
->### 3) Test model
+### 3) Test model
 test
 
 ## Others 

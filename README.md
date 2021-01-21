@@ -1,4 +1,4 @@
-### __VesselSeg-Pytorch__ : _Retinal vessel segmentation toolkit based on pytorch_
+## __VesselSeg-Pytorch__ : _Retinal vessel segmentation toolkit based on pytorch_
 ---
 ### Introduction
 This project is a retinal blood vessel segmentation code based on python and pytorch framework, including data preprocessing, model training and testing, visualization, etc. This project is suitable for researchers who study retinal vessel segmentation.
@@ -25,9 +25,9 @@ tqdm                      4.54.1
 The above environment is successful when running the code of the project. In addition, it is well known that pytorch has very good compatibility (version>=1.0). Thus, I suggest you try to use the existing pytorch environment firstly.
 
 ---  
-## Quick start 
+## Usage 
 ### 0) Download Project 
-`git clone https://github.com/lee-zq/VesselSeg-Pytorch.git`  
+```git clone https://github.com/lee-zq/VesselSeg-Pytorch.git```  
 ### 1) Datasets preparation 
 DRIVE
 

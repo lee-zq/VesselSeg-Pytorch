@@ -116,10 +116,10 @@ You can configure the training information in config, or modify the configuratio
 The test process also needs to specify parameters in `config.py`. You can also modify the parameters through the command line, running:
 ```
 cd ./src  # Enter the source code directory(optional)
-CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg
-```
-The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` and performs a performance test on the testset, and its test results are saved in the same folder.  
----  
+CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg  
+```  
+The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` and performs a performance test on the testset, and its test results are saved in the same folder.    
+
 ## Visualization of results
 1. Segmentation results (the original image, segmentation probability map, segmentation binary image, groundtruth)  
 ![Segmentation results](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/figures/img_prob_bin_gt_01_test.png)

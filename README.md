@@ -1,5 +1,4 @@
 ## __VesselSeg-Pytorch__ : _Retinal vessel segmentation toolkit based on pytorch_
----
 ### Introduction
 This project is a retinal blood vessel segmentation code based on python and pytorch framework, including data preprocessing, model training and testing, visualization, etc. This project is suitable for researchers who study retinal vessel segmentation.
 
@@ -29,7 +28,9 @@ The above environment is successful when running the code of the project. In add
 ### 0) Download Project 
 ```git clone https://github.com/lee-zq/VesselSeg-Pytorch.git```  
 ### 1) Datasets preparation 
-DRIVE
+* Please download the retina image datasets(DRIVE, STARE and CHASE_DB1) from `https://cloud.189.cn/t/UJrmYrFZBzIn` 
+* Unzip the downloaded file and copy the three data sets to the data folder of the root directory. The results are as follows:  
+```fdas```
 
 ### 2) Training model
 Train

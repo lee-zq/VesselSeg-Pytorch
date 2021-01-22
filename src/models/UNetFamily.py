@@ -201,6 +201,7 @@ class U_Net(nn.Module):
         d2 = self.Up_conv2(d2)
 
         d1 = self.Conv_1x1(d2)
+        d1 = F.log_softmax(d1,dim=1)  # mine
 
         return d1
 

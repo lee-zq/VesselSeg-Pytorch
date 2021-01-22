@@ -2,7 +2,7 @@ import torch.backends.cudnn as cudnn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import random,sys
+import random,sys,time
 from os.path import join
 import torch
 from lib.extract_patches import get_data_train
@@ -100,8 +100,8 @@ def main():
     sys.stdout = Print_Logger(os.path.join(save_path,'train_log.txt'))
     print('The computing device used is: ','GPU' if device.type=='cuda' else 'CPU')
     
-    # net = models.UNetFamily.R2AttU_Net(1,2).to(device)
-    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    net = models.UNetFamily.U_Net(1,2).to(device)
+    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
 
     log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file
@@ -132,9 +132,10 @@ def main():
     train_loader, val_loader = get_dataloader(args) 
     # eval_tool = Test(args) 
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
-    trigger = 0  # early stop 计数器
+    trigger = 0  # Early stop Counter
     for epoch in range(args.start_epoch,args.N_epochs+1):
-        print('\nEPOCH: %d/%d --(learn_rate:%.6f)' % ((epoch), args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr']))
+        print('\nEPOCH: %d/%d --(learn_rate:%.6f) | Time: %s' % \
+            (epoch, args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr'], time.asctime()))
 
         train_log = train(train_loader,net,criterion, optimizer,device)
         val_log = val(val_loader,net,criterion,device)

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     gt_test = "DRIVE/test/1st_manual/"
     fov_test = "DRIVE/test/mask/"
     #----------------------------------------------------------
-    save_path = "./data_path_list/DRIVE/"
+    save_path = "./prepare_dataset/data_path_list/DRIVE/"
     if not os.path.isdir(save_path):
         os.mkdir(save_path)
 

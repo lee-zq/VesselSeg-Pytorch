@@ -13,13 +13,13 @@ def parse_args():
 
     # data
     parser.add_argument('--train_data_path_list',
-                        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/train.txt')
+                        default='/ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/train.txt')
     parser.add_argument('--test_data_path_list',
-                        default='/ssd/lzq/projects/vesselseg/src/prepare_dataset/data_path_list/DRIVE/test.txt')
+                        default='/ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/test.txt')
 
     parser.add_argument('--train_patch_height', default=48)
     parser.add_argument('--train_patch_width', default=48)
-    parser.add_argument('--N_patches', default=200000)
+    parser.add_argument('--N_patches', default=100000)
     parser.add_argument('--inside_FOV', default=True)
     parser.add_argument('--val_ratio', default=0.1)
     # model parameters
@@ -37,6 +37,8 @@ def parse_args():
                         help='early stopping')
     parser.add_argument('--lr', default=0.0001, type=float,
                         help='initial learning rate')
+    parser.add_argument('--val_on_test', default=True, type=bool,
+                        help='Validation on testset')
 
     # for pre_trained checkpoint
     parser.add_argument('--start_epoch', default=1)

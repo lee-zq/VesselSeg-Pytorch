@@ -130,7 +130,10 @@ def main():
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
     train_loader, val_loader = get_dataloader(args) 
-    # eval_tool = Test(args) 
+    if args.val_on_test: 
+        print('\033[0;32mValidation on Testset!!!\033[0m')
+        val_tool = Test(args) 
+
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
     trigger = 0  # Early stop Counter
     for epoch in range(args.start_epoch,args.N_epochs+1):
@@ -138,9 +141,13 @@ def main():
             (epoch, args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr'], time.asctime()))
 
         train_log = train(train_loader,net,criterion, optimizer,device)
-        val_log = val(val_loader,net,criterion,device)
-        # eval_tool.inference(net)
-        # val_log = eval_tool.evaluate()
+
+        if not args.val_on_test:
+            val_log = val(val_loader,net,criterion,device)
+        else:
+            val_tool.inference(net)
+            val_log = val_tool.val()
+
         log.update(epoch,train_log,val_log)
         lr_scheduler.step()
 
@@ -149,7 +156,7 @@ def main():
         torch.save(state, join(save_path, 'latest_model.pth'))
         trigger += 1
         if val_log['val_auc_roc'] > best['AUC_roc']:
-            print('Saving best model')
+            print('\033[0;33mSaving best model!\033[0m')
             torch.save(state, join(save_path, 'best_model.pth'))
             best['epoch'] = epoch
             best['AUC_roc'] = val_log['val_auc_roc']

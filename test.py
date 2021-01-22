@@ -73,10 +73,9 @@ class Test():
         y_scores, y_true = pred_only_in_FOV(self.pred_imgs, self.test_masks, self.test_FOVs)
         eval = Evaluate(save_path=self.path_experiment)
         eval.add_batch(y_true, y_scores)
-        log = eval.save_all_result(plot_curve=True)
+        log = eval.save_all_result(plot_curve=True,save_name="performance.txt")
         # save labels and probs for plot ROC and PR curve when k-fold Cross-validation
-        np.save('{}/result.npy'.format(self.path_experiment),
-                np.asarray([y_true, y_scores]))
+        np.save('{}/result.npy'.format(self.path_experiment), np.asarray([y_true, y_scores]))
         return dict_round(log, 6)
 
     # save segmentation imgs
@@ -91,8 +90,22 @@ class Test():
         # self.test_imgs = my_PreProc(self.test_imgs) # Uncomment to save the pre processed image
         for i in range(self.test_imgs.shape[0]):
             total_img = concat_result(self.test_imgs[i],self.pred_imgs[i],self.test_masks[i])
-            visualize(total_img,join(self.save_img_path, "img_prob_bin_gt_"+img_name_list[i]+'.png'))
+            visualize(total_img,join(self.save_img_path, "Result_"+img_name_list[i]+'.png'))
 
+    def val(self):
+        self.pred_imgs = recompone_overlap(
+            self.pred_patches, self.new_height, self.new_width, self.args.stride_height, self.args.stride_width)
+        ## back to original dimensions
+        self.pred_imgs = self.pred_imgs[:, :, 0:self.img_height, 0:self.img_width]
+
+        #predictions only inside the FOV
+        y_scores, y_true = pred_only_in_FOV(self.pred_imgs, self.test_masks, self.test_FOVs)
+        eval = Evaluate(save_path=self.path_experiment)
+        eval.add_batch(y_true, y_scores)
+        log = OrderedDict([('val_auc_roc', eval.auc_roc()), 
+                            ('val_acc',eval.confusion_matrix()[1]),
+                            ('val_f1', eval.f1_score())])
+        return dict_round(log, 6)
 
 if __name__ == '__main__':
     args = parse_args()

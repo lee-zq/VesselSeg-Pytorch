@@ -98,25 +98,26 @@ class Evaluate():
         # print("F1 score (F-measure): " +str(F1_score))
         return F1_score
 
-    def save_all_result(self,plot_curve=True):
+    def save_all_result(self,plot_curve=True,save_name=None):
         #Save the results
         AUC_ROC = self.auc_roc(plot=plot_curve)
         AUC_pr  = self.auc_pr(plot=plot_curve)
         F1_score = self.f1_score()
         confusion,accuracy, specificity, sensitivity, precision = self.confusion_matrix()
-        file_perf = open(join(self.save_path,'performances.txt'), 'w')
-        file_perf.write("AUC ROC curve: "+str(AUC_ROC)
-                        + "\nAUC PR curve: " +str(AUC_pr)
-                        # + "\nJaccard similarity score: " +str(jaccard_index)
-                        + "\nF1 score : " +str(F1_score)
-                        +"\nACCURACY: " +str(accuracy)
-                        +"\nSENSITIVITY: " +str(sensitivity)
-                        +"\nSPECIFICITY: " +str(specificity)
-                        +"\n\nPRECISION: " +str(precision)
-                        + "\nConfusion matrix:"
-                        + str(confusion)
-                        )
-        file_perf.close()
+        if save_name is not None:
+            file_perf = open(join(self.save_path, save_name), 'w')
+            file_perf.write("AUC ROC curve: "+str(AUC_ROC)
+                            + "\nAUC PR curve: " +str(AUC_pr)
+                            # + "\nJaccard similarity score: " +str(jaccard_index)
+                            + "\nF1 score: " +str(F1_score)
+                            +"\nAccuracy: " +str(accuracy)
+                            +"\nSensitivity(SE): " +str(sensitivity)
+                            +"\nSpecificity(SP): " +str(specificity)
+                            +"\nPrecision: " +str(precision)
+                            + "\n\nConfusion matrix:"
+                            + str(confusion)
+                            )
+            file_perf.close()
         return OrderedDict([("AUC_ROC",AUC_ROC),("AUC_PR",AUC_pr),
                             ("f1-score",F1_score),("Acc",accuracy),
                             ("SE",sensitivity),("SP",specificity),

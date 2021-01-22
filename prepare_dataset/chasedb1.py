@@ -31,7 +31,7 @@ if __name__ == "__main__":
     gt = "CHASEDB1/1st_label"
     fov = "CHASEDB1/mask"
     #---------------save path-----------------------------------------
-    save_path = "./data_path_list/CHASEDB1"
+    save_path = "./prepare_dataset/data_path_list/CHASEDB1"
     if not os.path.exists(save_path):
         os.mkdir(save_path)
     #-----------------------------------------------------------------

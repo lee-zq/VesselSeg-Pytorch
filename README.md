@@ -83,8 +83,7 @@ VesselSeg-Pytorch			# Source code
 3. Create data path index file(.txt). running:
 Please modify the data folder path:`data_root_path`(in the [`drive.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/drive.py), [`stare.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/stare.py) and [`chasedb1.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/chasedb1.py)) to the absolute path of the datasets downloaded above  
 ```
-cd ./prepare_dataset
-python drive.py           
+python ./prepare_dataset/drive.py           
 ```
 In the same way, the data path files of the three datasets can be obtained, and the results are saved in the [`./prepare_dataset/data_path_list`](https://github.com/lee-zq/VesselSeg-Pytorch/tree/master/prepare_dataset/data_path_list) folder
 ### 2) Training model
@@ -93,7 +92,7 @@ Please confirm the configuration information in the [`config.py`](https://github
 CUDA_VISIBLE_DEVICES=1 python train.py --save UNet_vessel_seg --batch_size 64
 ```
 You can configure the training information in config, or modify the configuration parameters using the command line. The training results will be saved to the corresponding directory(save name) in the `experiments` folder.  
-### 3) Test model
+### 3) Testing model
 The test process also needs to specify parameters in [`config.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/config.py). You can also modify the parameters through the command line, running:
 ```
 CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg  
@@ -105,22 +104,3 @@ The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` 
 ![Segmentation results](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/figures/img_prob_bin_gt_01_test.png)
 2. ROC Curve and PR Curve
 ## Others
-``` 
-├── experiments    		       # Experiment results folder
-│   ├── UNet_vessel_seg          # An experiment
-│        ├── args.pkl			    # Saved configuration file (pkl format)
-│        ├── args.txt			    # Saved configuration file (txt format)
-│        ├── best_model.pth 		# Best performance model saved
-│        ├── events.out.tfevents.00.Server	# Tensorboard log files (including loss, acc and auc, etc.)
-│        ├── latest_model.pth		# Latest model saved
-│        ├── log_2021-01-14-23-09.csv 	# csv log files (including val loss, acc and auc, etc.)
-│        ├── performances.txt		# Performance on the testset
-│        ├── Precision_recall.png  	# P-R curve on the testset
-│        ├── result_img		        # Visualized results of the testset
-│        ├── result.npy		        # Pixel probability prediction result
-│        ├── ROC.png			    # ROC curve on the testset
-│        ├── sample_input_imgs.png	# Input image patches example
-│        ├── sample_input_masks.png	# Input label example
-│        ├── test_log.txt		    # Training process log
-│        └── train_log.txt		    # Test process log
-```

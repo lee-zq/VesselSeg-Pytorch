@@ -31,7 +31,7 @@ if __name__ == "__main__":
     gt = "STARE/1st_labels_ah"
     fov = "STARE/mask"
     #---------------save path-----------------------------------------
-    save_path = "./data_path_list/STARE"
+    save_path = "./prepare_dataset/data_path_list/STARE"
     if not os.path.exists(save_path):
         os.mkdir(save_path)
     #-----------------------------------------------------------------

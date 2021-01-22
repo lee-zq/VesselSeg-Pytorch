@@ -30,25 +30,7 @@ The above environment is successful when running the code of the project. In add
 Running```git clone https://github.com/lee-zq/VesselSeg-Pytorch.git```  
 The project structure and intention are as follows : 
 ```
-├── data                	# Datasets folder
-├── experiments    		       # Experiment results folder
-│   ├── UNet_vessel_seg          # An experiment
-│        ├── args.pkl			    # Saved configuration file (pkl format)
-│        ├── args.txt			    # Saved configuration file (txt format)
-│        ├── best_model.pth 		# Best performance model saved
-│        ├── events.out.tfevents.00.Server	# Tensorboard log files (including loss, acc and auc, etc.)
-│        ├── latest_model.pth		# Latest model saved
-│        ├── log_2021-01-14-23-09.csv 	# csv log files (including val loss, acc and auc, etc.)
-│        ├── performances.txt		# Performance on the testset
-│        ├── Precision_recall.png  	# P-R curve on the testset
-│        ├── result_img		        # Visualized results of the testset
-│        ├── result.npy		        # Pixel probability prediction result
-│        ├── ROC.png			    # ROC curve on the testset
-│        ├── sample_input_imgs.png	# Input image patches example
-│        ├── sample_input_masks.png	# Input label example
-│        ├── test_log.txt		    # Training process log
-│        └── train_log.txt		    # Test process log
-└── src			# Source code		
+VesselSeg-Pytorch			# Source code		
     ├── config.py		 	# Configuration information
     ├── lib			            # Function library
     │   ├── common.py
@@ -81,41 +63,39 @@ The project structure and intention are as follows :
 ```
 ### 1) Datasets preparation 
 1. Please download the retina image datasets(DRIVE, STARE and CHASE_DB1) from [TianYi Cloud](https://cloud.189.cn/t/UJrmYrFZBzIn). Otherwise, you can download three data sets from the official address: [DRIVE](http://www.isi.uu.nl/Research/Databases/DRIVE/),[STARE](http://www.ces.clemson.edu/ahoover/stare/) and [CHASE_DB1]().  
-2. Unzip the downloaded file and copy the three datasets to the data folder of the root directory. The results are as follows:  
+2. Unzip the downloaded `datasets.rar` file. The results are as follows:  
 ```
-./data
-  ├── CHASEDB1
-  │   ├── 1st_label
-  │   ├── 2nd_label
-  │   ├── images
-  │   └── mask
-  ├── DRIVE
-  │   ├── test
-  │   └── training
-  └── STARE
-      ├── 1st_labels_ah
-      ├── images
-      ├── mask
-      └── snd_label_vk
+  datasets
+    ├── CHASEDB1
+    │   ├── 1st_label
+    │   ├── 2nd_label
+    │   ├── images
+    │   └── mask
+    ├── DRIVE
+    │   ├── test
+    │   └── training
+    └── STARE
+        ├── 1st_labels_ah
+        ├── images
+        ├── mask
+        └── snd_label_vk
 ```
 3. Create data path index file(.txt). running:
+Please modify the data folder path:`data_root_path`(in the `drive.py`, `stare.py` and `chasedb1.py`) to the absolute path of the datasets downloaded above  
 ```
-cd ./src/prepare_dataset # Switch directory
-python drive.py          # Please modify the data folder path:data_root_path in the file  
+cd ./prepare_dataset
+python drive.py           
 ```
-In the same way, the data path files of the three datasets can be obtained, and the results are saved in the `src/prepare_dataset/data_path_list` folder
+In the same way, the data path files of the three datasets can be obtained, and the results are saved in the `./prepare_dataset/data_path_list` folder
 ### 2) Training model
 Please confirm the configuration information in the `config.py`. Pay special attention to the `train_data_path_list` and `test_data_path_list`. Then, running:
 ```
-cd ./src  # Enter the source code directory
 CUDA_VISIBLE_DEVICES=1 python train.py --save UNet_vessel_seg --batch_size 64
 ```
-You can configure the training information in config, or modify the configuration parameters using the command line. The training results will be saved to the corresponding directory(save name) in the `experiments` folder.
-
+You can configure the training information in config, or modify the configuration parameters using the command line. The training results will be saved to the corresponding directory(save name) in the `experiments` folder.  
 ### 3) Test model
 The test process also needs to specify parameters in `config.py`. You can also modify the parameters through the command line, running:
 ```
-cd ./src  # Enter the source code directory(optional)
 CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg  
 ```  
 The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` and performs a performance test on the testset, and its test results are saved in the same folder.    
@@ -124,4 +104,23 @@ The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` 
 1. Segmentation results (the original image, segmentation probability map, segmentation binary image, groundtruth)  
 ![Segmentation results](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/figures/img_prob_bin_gt_01_test.png)
 2. ROC Curve and PR Curve
-## Others 
+## Others
+``` 
+├── experiments    		       # Experiment results folder
+│   ├── UNet_vessel_seg          # An experiment
+│        ├── args.pkl			    # Saved configuration file (pkl format)
+│        ├── args.txt			    # Saved configuration file (txt format)
+│        ├── best_model.pth 		# Best performance model saved
+│        ├── events.out.tfevents.00.Server	# Tensorboard log files (including loss, acc and auc, etc.)
+│        ├── latest_model.pth		# Latest model saved
+│        ├── log_2021-01-14-23-09.csv 	# csv log files (including val loss, acc and auc, etc.)
+│        ├── performances.txt		# Performance on the testset
+│        ├── Precision_recall.png  	# P-R curve on the testset
+│        ├── result_img		        # Visualized results of the testset
+│        ├── result.npy		        # Pixel probability prediction result
+│        ├── ROC.png			    # ROC curve on the testset
+│        ├── sample_input_imgs.png	# Input image patches example
+│        ├── sample_input_masks.png	# Input label example
+│        ├── test_log.txt		    # Training process log
+│        └── train_log.txt		    # Test process log
+```

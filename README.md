@@ -81,20 +81,20 @@ VesselSeg-Pytorch			# Source code
         └── snd_label_vk
 ```
 3. Create data path index file(.txt). running:
-Please modify the data folder path:`data_root_path`(in the `drive.py`, `stare.py` and `chasedb1.py`) to the absolute path of the datasets downloaded above  
+Please modify the data folder path:`data_root_path`(in the [`drive.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/drive.py), [`stare.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/stare.py) and [`chasedb1.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/prepare_dataset/chasedb1.py)) to the absolute path of the datasets downloaded above  
 ```
 cd ./prepare_dataset
 python drive.py           
 ```
-In the same way, the data path files of the three datasets can be obtained, and the results are saved in the `./prepare_dataset/data_path_list` folder
+In the same way, the data path files of the three datasets can be obtained, and the results are saved in the [`./prepare_dataset/data_path_list`](https://github.com/lee-zq/VesselSeg-Pytorch/tree/master/prepare_dataset/data_path_list) folder
 ### 2) Training model
-Please confirm the configuration information in the `config.py`. Pay special attention to the `train_data_path_list` and `test_data_path_list`. Then, running:
+Please confirm the configuration information in the [`config.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/config.py). Pay special attention to the `train_data_path_list` and `test_data_path_list`. Then, running:
 ```
 CUDA_VISIBLE_DEVICES=1 python train.py --save UNet_vessel_seg --batch_size 64
 ```
 You can configure the training information in config, or modify the configuration parameters using the command line. The training results will be saved to the corresponding directory(save name) in the `experiments` folder.  
 ### 3) Test model
-The test process also needs to specify parameters in `config.py`. You can also modify the parameters through the command line, running:
+The test process also needs to specify parameters in [`config.py`](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/config.py). You can also modify the parameters through the command line, running:
 ```
 CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg  
 ```  

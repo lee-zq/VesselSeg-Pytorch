@@ -232,7 +232,7 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     print("N_patches_img: " + str(N_patches_img))
     assert (preds.shape[0]%N_patches_img==0)
     N_full_imgs = preds.shape[0]//N_patches_img
-    print("According to the dimension inserted, there are " +str(N_full_imgs) +" full images (of " +str(img_h)+"x" +str(img_w) +" each)")
+    print("According to the dimension inserted, there are " +str(N_full_imgs) +" images")
     full_prob = np.zeros((N_full_imgs,preds.shape[1],img_h,img_w))  #itialize to zero mega array with sum of Probabilities
     full_sum = np.zeros((N_full_imgs,preds.shape[1],img_h,img_w))
 
@@ -246,7 +246,7 @@ def recompone_overlap(preds, img_h, img_w, stride_h, stride_w):
     assert(k==preds.shape[0])
     assert(np.min(full_sum)>=1.0)  #at least one
     final_avg = full_prob/full_sum
-    print(final_avg.shape)
+    # print(final_avg.shape)
     assert(np.max(final_avg)<=1.0) #max value for a pixel is 1.0
     assert(np.min(final_avg)>=0.0) #min value for a pixel is 0.0
     return final_avg

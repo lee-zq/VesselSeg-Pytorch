@@ -3,7 +3,6 @@ data/
 !/data/README.md
 experiments/
 !experiments/README.md
-!experiments/UNet_vessel_seg/
 
 .vscode/
 

@@ -131,7 +131,7 @@ def main():
 
     train_loader, val_loader = get_dataloader(args) 
     if args.val_on_test: 
-        print('\033[0;32mValidation on Testset!!!\033[0m')
+        print('\033[0;32m===============Validation on Testset!!!===============\033[0m')
         val_tool = Test(args) 
 
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)

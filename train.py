@@ -128,7 +128,7 @@ def main():
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
-    train_loader, val_loader = get_dataloader(args)
+    
     if args.val_on_test: 
         print('\033[0;32m===============Validation on Testset!!!===============\033[0m')
         val_tool = Test(args) 
@@ -136,6 +136,7 @@ def main():
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
     trigger = 0  # Early stop Counter
     for epoch in range(args.start_epoch,args.N_epochs+1):
+        train_loader, val_loader = get_dataloader(args)
         print('\nEPOCH: %d/%d --(learn_rate:%.6f) | Time: %s' % \
             (epoch, args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr'], time.asctime()))
 

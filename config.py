@@ -29,13 +29,13 @@ def parse_args():
                         type=int, help='output channels')
 
     # training
-    parser.add_argument('--N_epochs', default=10, type=int,
+    parser.add_argument('--N_epochs', default=50, type=int,
                         help='number of total epochs to run')
     parser.add_argument('--batch_size', default=64,
                         type=int, help='batch size')
     parser.add_argument('--early-stop', default=6, type=int,
                         help='early stopping')
-    parser.add_argument('--lr', default=0.0001, type=float,
+    parser.add_argument('--lr', default=0.0005, type=float,
                         help='initial learning rate')
     parser.add_argument('--val_on_test', default=True, type=bool,
                         help='Validation on testset')

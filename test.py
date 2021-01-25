@@ -52,16 +52,11 @@ class Test():
             for batch_idx, inputs in tqdm(enumerate(self.test_loader), total=len(self.test_loader)):
                 inputs = inputs.cuda()
                 outputs = net(inputs)
-                # outputs = torch.nn.functional.softmax(outputs, dim=1)
-                # outputs = outputs.permute(0, 2, 3, 1)
-                # outputs = outputs.view(-1, outputs.shape[1]*outputs.shape[2], 2)
-                outputs = outputs[:,1]
-                outputs = outputs.data.cpu().numpy()
+                outputs = outputs[:,1].data.cpu().numpy()
                 preds.append(outputs)
         predictions = np.concatenate(preds, axis=0)
         self.pred_patches = np.expand_dims(predictions,axis=1)
         #===== Convert the prediction arrays in corresponding images
-        # self.pred_patches = pred_to_imgs(predictions, self.args.test_patch_height, self.args.test_patch_width)
 
     def evaluate(self):
         #========== Elaborate and visualize the predicted images ====================

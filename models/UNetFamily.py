@@ -201,7 +201,7 @@ class U_Net(nn.Module):
         d2 = self.Up_conv2(d2)
 
         d1 = self.Conv_1x1(d2)
-        d1 = F.log_softmax(d1,dim=1)  # mine
+        d1 = F.softmax(d1,dim=1)  # mine
 
         return d1
 
@@ -271,6 +271,7 @@ class R2U_Net(nn.Module):
         d2 = self.Up_RRCNN2(d2)
 
         d1 = self.Conv_1x1(d2)
+        d1 = F.softmax(d1,dim=1)
 
         return d1
 
@@ -343,7 +344,7 @@ class AttU_Net(nn.Module):
         d2 = self.Up_conv2(d2)
 
         d1 = self.Conv_1x1(d2)
-        d1 = F.log_softmax(d1,dim=1)  # mine
+        d1 = F.softmax(d1,dim=1)
         return d1
 
 
@@ -420,7 +421,7 @@ class R2AttU_Net(nn.Module):
         d2 = self.Up_RRCNN2(d2)
 
         d1 = self.Conv_1x1(d2)
-        d1 = F.log_softmax(d1, dim=1)  # mine
+        d1 = F.softmax(d1, dim=1)
 
         return d1
 

@@ -17,7 +17,7 @@ class TrainDataset(Dataset):
         if mode == "train":
             self.transforms = Compose([
                 # RandomResize([56,72],[56,72]),
-                # RandomCrop((48, 48)),
+                RandomCrop((48, 48)),
                 RandomFlip_LR(prob=0.5),
                 RandomFlip_UD(prob=0.5),
                 RandomRotate()

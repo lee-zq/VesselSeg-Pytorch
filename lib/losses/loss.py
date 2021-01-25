@@ -33,7 +33,7 @@ class CrossEntropyLoss2d(nn.Module):
         self.nll_loss = nn.NLLLoss(weight, size_average, ignore_index)
 
     def forward(self, inputs, targets):
-        return self.nll_loss(F.log_softmax(inputs,1), targets)  # 包含了log_softmax函数，调用时网络输出层不需要加log_softmax
+        return self.nll_loss(torch.log(inputs), targets)  
 
 class FocalLoss2d(nn.Module):
     def __init__(self, gamma=2, weight=None, size_average=True, ignore_index=255):

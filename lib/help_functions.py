@@ -45,10 +45,10 @@ def visualize(data,filename):
     img.save(filename)
     return img
 
-def pred_to_imgs(pred, patch_height, patch_width):
-    assert (len(pred.shape)==3)  #3D array: (N_patches,height*width,2)
-    assert (pred.shape[2]==2 )  #check the classes are 2
+# def pred_to_imgs(pred, patch_height, patch_width):
+#     assert (len(pred.shape)==3)  #3D array: (N_patches,height*width,2)
+#     assert (pred.shape[2]==2 )  #check the classes are 2
 
-    pred_images = pred[:, :, 1]
-    pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
-    return pred_images
+#     pred_images = pred[:, :, 1]
+#     pred_images = np.reshape(pred_images,(pred_images.shape[0],1, patch_height, patch_width))
+#     return pred_images

@@ -20,8 +20,7 @@ from lib.common import setpu_seed,dict_round
 from config import parse_args
 from lib.pre_processing import my_PreProc
 
-setpu_seed(2020)
-
+setpu_seed(2021)
 
 class Test():
     def __init__(self, args):
@@ -53,14 +52,16 @@ class Test():
             for batch_idx, inputs in tqdm(enumerate(self.test_loader), total=len(self.test_loader)):
                 inputs = inputs.cuda()
                 outputs = net(inputs)
-                outputs = torch.nn.functional.softmax(outputs, dim=1)
-                outputs = outputs.permute(0, 2, 3, 1)
-                outputs = outputs.view(-1, outputs.shape[1]*outputs.shape[2], 2)
+                # outputs = torch.nn.functional.softmax(outputs, dim=1)
+                # outputs = outputs.permute(0, 2, 3, 1)
+                # outputs = outputs.view(-1, outputs.shape[1]*outputs.shape[2], 2)
+                outputs = outputs[:,1]
                 outputs = outputs.data.cpu().numpy()
                 preds.append(outputs)
         predictions = np.concatenate(preds, axis=0)
+        self.pred_patches = np.expand_dims(predictions,axis=1)
         #===== Convert the prediction arrays in corresponding images
-        self.pred_patches = pred_to_imgs(predictions, self.args.test_patch_height, self.args.test_patch_width)
+        # self.pred_patches = pred_to_imgs(predictions, self.args.test_patch_height, self.args.test_patch_width)
 
     def evaluate(self):
         #========== Elaborate and visualize the predicted images ====================
@@ -109,14 +110,13 @@ class Test():
 
 if __name__ == '__main__':
     args = parse_args()
-    # args.save = 'test16'
     save_path = join(args.outf, args.save)
     sys.stdout = Print_Logger(os.path.join(save_path, 'test_log.txt'))
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     # net = models.denseunet.Dense_Unet(1,2,filters=64)
-    net = models.UNetFamily.U_Net(1,2).to(device)
-    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    # net = models.UNetFamily.U_Net(1,2).to(device)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     cudnn.benchmark = True
 
     # Load checkpoint

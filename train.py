@@ -40,7 +40,7 @@ def get_dataloader(args):
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
                             shuffle=False, num_workers=6)
     # Save some samples of  feeding to the neural network
-    N_sample = min(patches_imgs_train.shape[0], 100)
+    N_sample = min(patches_imgs_train.shape[0], 50)
     visualize(group_images((patches_imgs_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
               join(args.outf, args.save, "sample_input_imgs.png"))
     visualize(group_images((patches_masks_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
@@ -77,7 +77,6 @@ def val(val_loader,net,criterion,device):
             loss = criterion(outputs, targets)
             val_loss.update(loss.item(), inputs.size(0))
 
-            outputs = torch.nn.functional.softmax(outputs,dim=1)
             outputs = outputs.data.cpu().numpy()
             targets = targets.data.cpu().numpy()
             evaluater.add_batch(targets,outputs[:,1])
@@ -100,8 +99,8 @@ def main():
     sys.stdout = Print_Logger(os.path.join(save_path,'train_log.txt'))
     print('The computing device used is: ','GPU' if device.type=='cuda' else 'CPU')
     
-    net = models.UNetFamily.U_Net(1,2).to(device)
-    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    # net = models.UNetFamily.U_Net(1,2).to(device)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
 
     log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file
@@ -117,8 +116,8 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
         args.start_epoch = checkpoint['epoch']+1
 
-    criterion = LossMulti(jaccard_weight=0,class_weights=np.array([0.5,0.5]))
-    # criterion = CrossEntropy2d()
+    # criterion = LossMulti(jaccard_weight=0,class_weights=np.array([0.5,0.5]))
+    criterion = CrossEntropyLoss2d()
 
     # create a list of learning rate with epochs
     # lr_epoch = np.array([50, args.N_epochs])
@@ -129,7 +128,7 @@ def main():
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
 
-    train_loader, val_loader = get_dataloader(args) 
+    train_loader, val_loader = get_dataloader(args)
     if args.val_on_test: 
         print('\033[0;32m===============Validation on Testset!!!===============\033[0m')
         val_tool = Test(args) 

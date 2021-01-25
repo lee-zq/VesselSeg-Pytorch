@@ -235,5 +235,5 @@ class LadderNet(nn.Module):
         out = self.final_block(out)
         out = self.final(out)
         #out = F.relu(out)
-        out = F.log_softmax(out,dim=1)
+        out = F.softmax(out,dim=1)
         return out

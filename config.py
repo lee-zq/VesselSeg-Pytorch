@@ -6,19 +6,19 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # in/out
-    parser.add_argument('--outf', default='/ssd/lzq/projects/vesselseg/experiments',
+    parser.add_argument('--outf', default='./experiments',
                         help='trained model will be saved at here')
-    parser.add_argument('--save', default='test',
+    parser.add_argument('--save', default='UNet_vessel_seg',
                         help='save name of experiment in args.outf directory')
 
     # data
     parser.add_argument('--train_data_path_list',
-                        default='/ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/train.txt')
+                        default='./prepare_dataset/data_path_list/DRIVE/train.txt')
     parser.add_argument('--test_data_path_list',
-                        default='/ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/test.txt')
+                        default='./prepare_dataset/data_path_list/DRIVE/test.txt')
 
-    parser.add_argument('--train_patch_height', default=48)
-    parser.add_argument('--train_patch_width', default=48)
+    parser.add_argument('--train_patch_height', default=64)
+    parser.add_argument('--train_patch_width', default=64)
     parser.add_argument('--N_patches', default=100000)
     parser.add_argument('--inside_FOV', default=True)
     parser.add_argument('--val_ratio', default=0.1)
@@ -29,7 +29,7 @@ def parse_args():
                         type=int, help='output channels')
 
     # training
-    parser.add_argument('--N_epochs', default=50, type=int,
+    parser.add_argument('--N_epochs', default=10, type=int,
                         help='number of total epochs to run')
     parser.add_argument('--batch_size', default=64,
                         type=int, help='batch size')

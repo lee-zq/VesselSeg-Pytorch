@@ -1,7 +1,7 @@
 ## __VesselSeg-Pytorch__ : _Retinal vessel segmentation toolkit based on pytorch_
 ### Introduction
-This project is a retinal blood vessel segmentation code based on python and pytorch framework, including data preprocessing, model training and testing, visualization, etc. This project is suitable for researchers who study retinal vessel segmentation.
-
+This project is a retinal blood vessel segmentation code based on python and pytorch framework, including data preprocessing, model training and testing, visualization, etc. This project is suitable for researchers who study retinal vessel segmentation.  
+![Segmentation results](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16jnugz6j20ri08w465.jpg)  
 ### Requirements  
 The main package and version of the python environment are as follows
 ```
@@ -100,8 +100,12 @@ CUDA_VISIBLE_DEVICES=1 python test.py --save UNet_vessel_seg
 The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` and performs a performance test on the testset, and its test results are saved in the same folder.    
 
 ## Visualization of results
-1. Segmentation results (the original image, segmentation probability map, segmentation binary image, groundtruth)  
-![Segmentation results](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16jnugz6j20ri08w465.jpg)
+0. Training sample visualization  
+![train data](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1710u3s4j20hg06y0tt.jpg)  
+1. Segmentation results (the original image, predicted probability image, predicted binary image and groundtruth)  
+![results drive3](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16yw1u1qj21qs0g8tou.jpg)   
+![results drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
+![results drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
 2. ROC Curve and PR Curve
-
+![roc drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1740h9h1j20hs0dct9c.jpg)![pr drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn174q0dguj20hs0dcaam.jpg)  
 ## Others

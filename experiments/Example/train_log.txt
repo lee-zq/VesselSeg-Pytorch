@@ -1,0 +1,141 @@
+The computing device used is:  GPU
+Total number of parameters: 34525954
+Architecture of Model have saved in Tensorboard!
+[0;33mload data from /ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/train.txt [0m
+ori data shape < ori_imgs:(20, 3, 584, 565) GTs:(20, 1, 584, 565) FOVs:(20, 1, 584, 565)
+imgs pixel range 0-255: 
+GTs pixel range 0-255: 
+FOVs pixel range 0-255: 
+==================data have loaded======================
+
+Train images shape: (20, 1, 584, 565), vaule range (0.0 - 1.0):
+patches per image: 5000
+train patches shape: (100000, 1, 48, 48), value range (0.0 - 1.0)
+[0;32mValidation on Testset!!![0m
+[0;33mload data from /ssd/lzq/projects/vesselseg/prepare_dataset/data_path_list/DRIVE/test.txt [0m
+ori data shape < ori_imgs:(20, 3, 584, 565) GTs:(20, 1, 584, 565) FOVs:(20, 1, 584, 565)
+imgs pixel range 0-255: 
+GTs pixel range 0-255: 
+FOVs pixel range 0-255: 
+==================data have loaded======================
+
+the side H is not compatible with the selected stride of 16
+img_h 584, patch_h 96, stride_h 16
+(img_h - patch_h) MOD stride_h: 8
+So the H dim will be padded with additional 8 pixels
+the side W is not compatible with the selected stride of 16
+img_w 565, patch_w 96, stride_w 16
+(img_w - patch_w) MOD stride_w: 5
+So the W dim will be padded with additional 11 pixels
+new full images shape: (20, 1, 592, 576)
+
+Test images shape: (20, 1, 592, 576), vaule range (0.0 - 1.0):
+Number of patches on h : 32
+Number of patches on w : 31
+number of patches per image: 992, totally for this dataset: 19840
+test patches shape: (19840, 1, 96, 96), value range (0.0 - 1.0)
+
+EPOCH: 1/50 --(learn_rate:0.000100) | Time: Fri Jan 22 21:37:23 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 1), ('train_loss', 0.149005), ('val_auc_roc', 0.978863), ('val_acc', 0.954974), ('val_f1', 0.822566)])
+[0;33mSaving best model![0m
+Best performance at Epoch: 1 | AUC_roc: 0.978863
+
+EPOCH: 2/50 --(learn_rate:0.000100) | Time: Fri Jan 22 21:39:56 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 2), ('train_loss', 0.112972), ('val_auc_roc', 0.980005), ('val_acc', 0.956922), ('val_f1', 0.826443)])
+[0;33mSaving best model![0m
+Best performance at Epoch: 2 | AUC_roc: 0.980005
+
+EPOCH: 3/50 --(learn_rate:0.000100) | Time: Fri Jan 22 21:42:30 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 3), ('train_loss', 0.107827), ('val_auc_roc', 0.980281), ('val_acc', 0.957215), ('val_f1', 0.82673)])
+[0;33mSaving best model![0m
+Best performance at Epoch: 3 | AUC_roc: 0.980281
+
+EPOCH: 4/50 --(learn_rate:0.000099) | Time: Fri Jan 22 21:45:05 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 4), ('train_loss', 0.104817), ('val_auc_roc', 0.980439), ('val_acc', 0.956755), ('val_f1', 0.828352)])
+[0;33mSaving best model![0m
+Best performance at Epoch: 4 | AUC_roc: 0.980439
+
+EPOCH: 5/50 --(learn_rate:0.000098) | Time: Fri Jan 22 21:47:39 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 5), ('train_loss', 0.102211), ('val_auc_roc', 0.980667), ('val_acc', 0.957071), ('val_f1', 0.826338)])
+[0;33mSaving best model![0m
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 6/50 --(learn_rate:0.000098) | Time: Fri Jan 22 21:50:14 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 6), ('train_loss', 0.1), ('val_auc_roc', 0.980501), ('val_acc', 0.956719), ('val_f1', 0.827644)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 7/50 --(learn_rate:0.000096) | Time: Fri Jan 22 21:52:47 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 7), ('train_loss', 0.097532), ('val_auc_roc', 0.97973), ('val_acc', 0.95682), ('val_f1', 0.826485)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 8/50 --(learn_rate:0.000095) | Time: Fri Jan 22 21:55:20 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 8), ('train_loss', 0.095253), ('val_auc_roc', 0.979032), ('val_acc', 0.955755), ('val_f1', 0.822463)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 9/50 --(learn_rate:0.000094) | Time: Fri Jan 22 21:57:53 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 9), ('train_loss', 0.09293), ('val_auc_roc', 0.979556), ('val_acc', 0.956356), ('val_f1', 0.824103)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 10/50 --(learn_rate:0.000092) | Time: Fri Jan 22 22:00:26 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 10), ('train_loss', 0.09074), ('val_auc_roc', 0.978833), ('val_acc', 0.956238), ('val_f1', 0.822186)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+
+EPOCH: 11/50 --(learn_rate:0.000090) | Time: Fri Jan 22 22:02:59 2021
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 full images (of 592x576 each)
+(20, 1, 592, 576)
+OrderedDict([('epoch', 11), ('train_loss', 0.088608), ('val_auc_roc', 0.978919), ('val_acc', 0.95645), ('val_f1', 0.822891)])
+Best performance at Epoch: 5 | AUC_roc: 0.980667
+=> early stopping

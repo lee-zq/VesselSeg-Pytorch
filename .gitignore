@@ -1,7 +1,7 @@
 # my options 
 data/
 !/data/README.md
-experiments/
+experiments/*
 !experiments/README.md
 !experiments/Example
 

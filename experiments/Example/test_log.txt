@@ -1,0 +1,28 @@
+==> Resuming from checkpoint..
+[0;33mload data from ./prepare_dataset/data_path_list/DRIVE/test.txt [0m
+ori data shape < ori_imgs:(20, 3, 584, 565) GTs:(20, 1, 584, 565) FOVs:(20, 1, 584, 565)
+imgs pixel range 0-255: 
+GTs pixel range 0-255: 
+FOVs pixel range 0-255: 
+==================data have loaded======================
+
+the side H is not compatible with the selected stride of 16
+img_h 584, patch_h 96, stride_h 16
+(img_h - patch_h) MOD stride_h: 8
+So the H dim will be padded with additional 8 pixels
+the side W is not compatible with the selected stride of 16
+img_w 565, patch_w 96, stride_w 16
+(img_w - patch_w) MOD stride_w: 5
+So the W dim will be padded with additional 11 pixels
+new full images shape: (20, 1, 592, 576)
+
+Test images shape: (20, 1, 592, 576), vaule range (0.0 - 1.0):
+Number of patches on h : 32
+Number of patches on w : 31
+number of patches per image: 992, totally for this dataset: 19840
+test patches shape: (19840, 1, 96, 96), value range (0.0 - 1.0)
+N_patches_h: 32
+N_patches_w: 31
+N_patches_img: 992
+According to the dimension inserted, there are 20 images
+OrderedDict([('AUC_ROC', 0.980667), ('AUC_PR', 0.914875), ('f1-score', 0.82634), ('Acc', 0.957071), ('SE', 0.802406), ('SP', 0.979629), ('precision', 0.851746)])

@@ -12,6 +12,7 @@ from os.path import join
 import numpy as np
 from collections import OrderedDict
 import matplotlib.pylab as pylab
+import matplotlib.pyplot as plt
 params = {'legend.fontsize': 13,
          'axes.labelsize': 15,
          'axes.titlesize':15,

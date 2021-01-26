@@ -5,7 +5,7 @@ import torch,sys
 from tqdm import tqdm
 
 from collections import OrderedDict
-from lib.visualize import save_img,group_images
+from lib.visualize import save_img,group_images,concat_result
 import os
 import argparse
 from lib.logger import Logger, Print_Logger

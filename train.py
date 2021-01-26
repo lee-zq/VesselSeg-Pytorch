@@ -1,16 +1,15 @@
 import torch.backends.cudnn as cudnn
 import torch.optim as optim
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 import random,sys,time
 from os.path import join
 import torch
 from lib.extract_patches import get_data_train
 from lib.losses.loss import *
-from lib.losses.lovasz_loss import lovasz_with_softmax
-from lib.help_functions import *
+from lib.visualize import group_images, save_img
 from lib.common import *
 from lib.dataset import TrainDataset,TestDataset
+from torch.utils.data import DataLoader
 from config import parse_args
 from lib.logger import Logger, Print_Logger
 from collections import OrderedDict
@@ -19,7 +18,7 @@ import models
 from test import Test
 
 
-#  Load the data and divided in patches
+#  Load the data and extract patches
 def get_dataloader(args):
     patches_imgs_train, patches_masks_train = get_data_train(
         data_path_list = args.train_data_path_list,
@@ -39,11 +38,11 @@ def get_dataloader(args):
     val_set = TrainDataset(patches_imgs_train[val_ind,...],patches_masks_train[val_ind,...],mode="val")
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
                             shuffle=False, num_workers=6)
-    # Save some samples of  feeding to the neural network
+    # Save some samples of feeding to the neural network
     N_sample = min(patches_imgs_train.shape[0], 50)
-    visualize(group_images((patches_imgs_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
+    save_img(group_images((patches_imgs_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
               join(args.outf, args.save, "sample_input_imgs.png"))
-    visualize(group_images((patches_masks_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
+    save_img(group_images((patches_masks_train[0:N_sample, :, :, :]*255).astype(np.uint8), 10),
               join(args.outf, args.save,"sample_input_masks.png"))
     return train_loader,val_loader
 
@@ -100,7 +99,8 @@ def main():
     print('The computing device used is: ','GPU' if device.type=='cuda' else 'CPU')
     
     # net = models.UNetFamily.U_Net(1,2).to(device)
-    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    net = models.Dense_Unet(in_chan=1, out_chan=2).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
 
     log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file
@@ -117,7 +117,7 @@ def main():
         args.start_epoch = checkpoint['epoch']+1
 
     # criterion = LossMulti(jaccard_weight=0,class_weights=np.array([0.5,0.5]))
-    criterion = CrossEntropyLoss2d()
+    criterion = CrossEntropyLoss2d() # Initialize loss function
 
     # create a list of learning rate with epochs
     # lr_epoch = np.array([50, args.N_epochs])
@@ -127,8 +127,9 @@ def main():
     # optimizer = optim.SGD(net.parameters(),lr=lr_schedule[0], momentum=0.9, weight_decay=5e-4, nesterov=True)
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.N_epochs, eta_min=0)
-
     
+    train_loader, val_loader = get_dataloader(args) # create dataloader
+
     if args.val_on_test: 
         print('\033[0;32m===============Validation on Testset!!!===============\033[0m')
         val_tool = Test(args) 
@@ -136,19 +137,19 @@ def main():
     best = {'epoch':0,'AUC_roc':0.5} # Initialize the best epoch and performance(AUC of ROC)
     trigger = 0  # Early stop Counter
     for epoch in range(args.start_epoch,args.N_epochs+1):
-        train_loader, val_loader = get_dataloader(args)
         print('\nEPOCH: %d/%d --(learn_rate:%.6f) | Time: %s' % \
             (epoch, args.N_epochs,optimizer.state_dict()['param_groups'][0]['lr'], time.asctime()))
-
-        train_log = train(train_loader,net,criterion, optimizer,device)
-
+        
+        # train stage
+        train_log = train(train_loader,net,criterion, optimizer,device) 
+        # val stage
         if not args.val_on_test:
             val_log = val(val_loader,net,criterion,device)
         else:
             val_tool.inference(net)
             val_log = val_tool.val()
 
-        log.update(epoch,train_log,val_log)
+        log.update(epoch,train_log,val_log) # Add log information
         lr_scheduler.step()
 
         # Save checkpoint of latest and best model.

@@ -1,3 +1,6 @@
+"""
+This part contains functions related to the calculation of performance indicators
+"""
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
@@ -7,8 +10,6 @@ import os
 import torch
 from os.path import join
 from collections import OrderedDict
-# help_functions.py
-from lib.help_functions import *
 import matplotlib.pylab as pylab
 params = {'legend.fontsize': 13,
          'axes.labelsize': 15,
@@ -27,18 +28,21 @@ class Evaluate():
             if not os.path.exists(self.save_path):
                 os.makedirs(self.save_path)
         self.threshold_confusion = 0.5
+
+    # Add data pair (target and predicted value)
     def add_batch(self,batch_tar,batch_out):
         batch_tar = batch_tar.flatten()
         batch_out = batch_out.flatten()
 
         self.target = batch_tar if self.target is None else np.concatenate((self.target,batch_tar))
         self.output = batch_out if self.output is None else np.concatenate((self.output,batch_out))
+    
+    # Plot ROC and calculate AUC of ROC
     def auc_roc(self,plot=False):
         AUC_ROC = roc_auc_score(self.target, self.output)
         # print("\nAUC of ROC curve: " + str(AUC_ROC))
         if plot and self.save_path is not None:
             fpr, tpr, thresholds = roc_curve(self.target, self.output)
-            # test_integral = np.trapz(tpr,fpr) #trapz is numpy integration
             # print("\nArea under the ROC curve: " + str(AUC_ROC))
             plt.figure()
             plt.plot(fpr, tpr, '-', label='Area Under the Curve (AUC = %0.4f)' % AUC_ROC)
@@ -49,10 +53,11 @@ class Evaluate():
             plt.savefig(join(self.save_path , "ROC.png"))
         return AUC_ROC
 
+    # Plot PR curve and calculate AUC of PR curve
     def auc_pr(self,plot=False):
         precision, recall, thresholds = precision_recall_curve(self.target, self.output)
-        precision = np.fliplr([precision])[0]  # so the array is increasing (you won't get negative AUC)
-        recall = np.fliplr([recall])[0]  # so the array is increasing (you won't get negative AUC)
+        precision = np.fliplr([precision])[0]
+        recall = np.fliplr([recall])[0]
         AUC_pr = np.trapz(precision, recall)
         # print("\nAUC of P-R curve: " + str(AUC_pr))
         if plot and self.save_path is not None:
@@ -65,6 +70,8 @@ class Evaluate():
             plt.legend(loc="lower right")
             plt.savefig(join(self.save_path ,"Precision_recall.png"))
         return AUC_pr
+
+    # Accuracy, specificity, sensitivity, precision can be obtained by calculating the confusion matrix
     def confusion_matrix(self):
         #Confusion matrix
         y_pred = self.output>=self.threshold_confusion
@@ -87,17 +94,21 @@ class Evaluate():
             precision = float(confusion[1,1])/float(confusion[1,1]+confusion[0,1])
         # print("Precision: " +str(precision))
         return confusion,accuracy,specificity,sensitivity,precision
+
+    # Jaccard similarity index
     def jaccard_index(self):
         pass
-        # Jaccard similarity index
         # jaccard_index = jaccard_similarity_score(y_true, y_pred, normalize=True)
         # print("\nJaccard similarity score: " +str(jaccard_index))
+
+    # calculating f1_score
     def f1_score(self):
         pred = self.output>=self.threshold_confusion
         F1_score = f1_score(self.target, pred, labels=None, average='binary', sample_weight=None)
         # print("F1 score (F-measure): " +str(F1_score))
         return F1_score
 
+    # Save performance results to specified file
     def save_all_result(self,plot_curve=True,save_name=None):
         #Save the results
         AUC_ROC = self.auc_roc(plot=plot_curve)

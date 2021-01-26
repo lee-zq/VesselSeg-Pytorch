@@ -1,16 +1,17 @@
+"""
+This part is based on the dataset class implemented by pytorch, 
+including train_dataset and test_dataset, as well as data augmentation
+"""
 from torch.utils.data import Dataset
 import torch
 import numpy as np
-
 import random
 import torch.nn.functional as F
 from torchvision import transforms
 from torchvision.transforms.functional import normalize
 
 class TrainDataset(Dataset):
-
     def __init__(self, patches_imgs,patches_masks,mode="train"):
-
         self.imgs = patches_imgs
         self.masks = patches_masks
         self.transforms = None

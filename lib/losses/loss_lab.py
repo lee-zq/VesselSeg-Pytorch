@@ -1,31 +1,19 @@
+"""
+This part is mainly the important loss function in semantic segmentation. 
+These functions are still in beta.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch import mean
 
-# target one-hot编码
+# one-hot encode of target(label)
 def to_one_hot(tensor, n_classes):
     n, h, w = tensor.size()
     one_hot = torch.zeros(n, n_classes, h, w).scatter_(1, tensor.view(n, 1, h, w), 1)
     return one_hot
-
-# pytorch自带Loss
-# 二值交叉熵，这里输入要经过sigmoid处理
-# nn.BCELoss(F.sigmoid(input), target)
-# 多分类交叉熵, 用这个 loss 前面不需要加 Softmax 层
-# nn.CrossEntropyLoss(input, target)
-def pytorch_loss(name):
-    if name=='L1':
-        pass
-    elif name=='L2':
-        pass
-    elif name == 'CE':
-        pass
-    elif name == 'BCE':
-        pass
-    else:
-        raise NameError('input name is not identifiable')
 
 # ---------------------------Dice Loss-------------------------
 class DiceLoss(nn.Module):

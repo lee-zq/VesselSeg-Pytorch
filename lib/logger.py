@@ -1,3 +1,6 @@
+
+import sys
+import os
 import pandas as pd
 from tensorboardX import SummaryWriter
 import matplotlib.pyplot as plt
@@ -5,6 +8,8 @@ import numpy as np
 import time
 from collections import OrderedDict
 from .common import dict_round
+
+# Record data in tensorboard and .csv files during training stage
 class Logger():
     def __init__(self,save_name):
         self.log = None
@@ -41,20 +46,7 @@ class Logger():
         self.summary.add_graph(model, (input,))
         print("Architecture of Model have saved in Tensorboard!")
 
-# def save_sample_res(args,input,output,target):
-#     cnt = 1
-#     for in1, out1, tar1 in zip(input.detach().cpu().numpy(),
-#                                np.argmax(output.detach().cpu().numpy(), axis=1),
-#                                np.argmax(target.detach().cpu().numpy(), axis=1)):
-#         plt.subplot(1, 3, 1), plt.imshow(in1[0]), plt.title('input_image')
-#         plt.subplot(1, 3, 2), plt.imshow(out1), plt.title('prediction')
-#         plt.subplot(1, 3, 3), plt.imshow(tar1), plt.title('groundtruth')
-#         plt.savefig('outputs/{}/result_{}.png'.format(args.name,cnt))
-#         cnt+=1
-
-import sys
-import os
-
+# Record the information printed in the terminal
 class Print_Logger(object):
     def __init__(self, filename="Default.log"):
         self.terminal = sys.stdout
@@ -66,5 +58,6 @@ class Print_Logger(object):
 
     def flush(self):
         pass
-
+# call by
 # sys.stdout = Logger(os.path.join(save_path,'test_log.txt'))
+

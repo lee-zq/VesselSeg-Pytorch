@@ -1,3 +1,7 @@
+"""
+This part is the available loss function
+"""
+
 import torch
 import numpy as np
 import torch.nn as nn
@@ -9,7 +13,7 @@ class LossMulti:
             nll_weight = torch.from_numpy(class_weights.astype(np.float32)).cuda()
         else:
             nll_weight = None
-        self.nll_loss = nn.NLLLoss(weight=nll_weight)  # 未融合softmax
+        self.nll_loss = nn.NLLLoss(weight=nll_weight)  # Not include softmax
         self.jaccard_weight = jaccard_weight
         self.num_classes = num_classes
 

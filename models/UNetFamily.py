@@ -1,33 +1,14 @@
+"""
+This part contains UNet series models, 
+including UNet, R2UNet, Attention UNet, R2Attention UNet, DenseUNet
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 
-
-def init_weights(net, init_type='normal', gain=0.02):
-    def init_func(m):
-        classname = m.__class__.__name__
-        if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
-            if init_type == 'normal':
-                init.normal_(m.weight.data, 0.0, gain)
-            elif init_type == 'xavier':
-                init.xavier_normal_(m.weight.data, gain=gain)
-            elif init_type == 'kaiming':
-                init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
-            elif init_type == 'orthogonal':
-                init.orthogonal_(m.weight.data, gain=gain)
-            else:
-                raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
-            if hasattr(m, 'bias') and m.bias is not None:
-                init.constant_(m.bias.data, 0.0)
-        elif classname.find('BatchNorm2d') != -1:
-            init.normal_(m.weight.data, 1.0, gain)
-            init.constant_(m.bias.data, 0.0)
-
-    print('initialize network with %s' % init_type)
-    net.apply(init_func)
-
-
+# ==========================Core Module================================
 class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out):
         super(conv_block, self).__init__()
@@ -139,7 +120,7 @@ class Attention_block(nn.Module):  # attention Gate
 
         return x * psi
 
-
+# ==================================================================
 class U_Net(nn.Module):
     def __init__(self, img_ch=3, output_ch=1):
         super(U_Net, self).__init__()
@@ -205,7 +186,7 @@ class U_Net(nn.Module):
 
         return d1
 
-
+# ============================================================
 class R2U_Net(nn.Module):
     def __init__(self, img_ch=3, output_ch=1, t=2):
         super(R2U_Net, self).__init__()
@@ -275,7 +256,7 @@ class R2U_Net(nn.Module):
 
         return d1
 
-
+# ===========================================================
 class AttU_Net(nn.Module):
     def __init__(self, img_ch=3, output_ch=1):
         super(AttU_Net, self).__init__()
@@ -347,7 +328,7 @@ class AttU_Net(nn.Module):
         d1 = F.softmax(d1,dim=1)
         return d1
 
-
+# ==============================================================
 class R2AttU_Net(nn.Module):
     def __init__(self, img_ch=3, output_ch=1, t=2):
         super(R2AttU_Net, self).__init__()
@@ -424,6 +405,107 @@ class R2AttU_Net(nn.Module):
         d1 = F.softmax(d1, dim=1)
 
         return d1
+
+#==================DenseUNet=====================================
+class Single_level_densenet(nn.Module):
+    def __init__(self, filters, num_conv=4):
+        super(Single_level_densenet, self).__init__()
+        self.num_conv = num_conv
+        self.conv_list = nn.ModuleList()
+        self.bn_list = nn.ModuleList()
+        for i in range(self.num_conv):
+            self.conv_list.append(nn.Conv2d(filters, filters, 3, padding=1))
+            self.bn_list.append(nn.BatchNorm2d(filters))
+
+    def forward(self, x):
+        outs = []
+        outs.append(x)
+        for i in range(self.num_conv):
+            temp_out = self.conv_list[i](outs[i])
+            if i > 0:
+                for j in range(i):
+                    temp_out += outs[j]
+            outs.append(F.relu(self.bn_list[i](temp_out)))
+        out_final = outs[-1]
+        del outs
+        return out_final
+
+
+class Down_sample(nn.Module):
+    def __init__(self, kernel_size=2, stride=2):
+        super(Down_sample, self).__init__()
+        self.down_sample_layer = nn.MaxPool2d(kernel_size, stride)
+
+    def forward(self, x):
+        y = self.down_sample_layer(x)
+        return y, x
+
+
+class Upsample_n_Concat(nn.Module):
+    def __init__(self, filters):
+        super(Upsample_n_Concat, self).__init__()
+        self.upsample_layer = nn.ConvTranspose2d(filters, filters, 4, padding=1, stride=2)
+        self.conv = nn.Conv2d(2 * filters, filters, 3, padding=1)
+        self.bn = nn.BatchNorm2d(filters)
+
+    def forward(self, x, y):
+        x = self.upsample_layer(x)
+        x = torch.cat([x, y], dim=1)
+        x = F.relu(self.bn(self.conv(x)))
+        return x
+
+
+class Dense_Unet(nn.Module):
+    def __init__(self, in_chan=3,out_chan=2,filters=128, num_conv=4):
+
+        super(Dense_Unet, self).__init__()
+        self.conv1 = nn.Conv2d(in_chan, filters, 1)
+        self.d1 = Single_level_densenet(filters, num_conv)
+        self.down1 = Down_sample()
+        self.d2 = Single_level_densenet(filters, num_conv)
+        self.down2 = Down_sample()
+        self.d3 = Single_level_densenet(filters, num_conv)
+        self.down3 = Down_sample()
+        self.d4 = Single_level_densenet(filters, num_conv)
+        self.down4 = Down_sample()
+        self.bottom = Single_level_densenet(filters, num_conv)
+        self.up4 = Upsample_n_Concat(filters)
+        self.u4 = Single_level_densenet(filters, num_conv)
+        self.up3 = Upsample_n_Concat(filters)
+        self.u3 = Single_level_densenet(filters, num_conv)
+        self.up2 = Upsample_n_Concat(filters)
+        self.u2 = Single_level_densenet(filters, num_conv)
+        self.up1 = Upsample_n_Concat(filters)
+        self.u1 = Single_level_densenet(filters, num_conv)
+        self.outconv = nn.Conv2d(filters, out_chan, 1)
+
+    #         self.outconvp1 = nn.Conv2d(filters,out_chan, 1)
+    #         self.outconvm1 = nn.Conv2d(filters,out_chan, 1)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x, y1 = self.down1(self.d1(x))
+        x, y2 = self.down1(self.d2(x))
+        x, y3 = self.down1(self.d3(x))
+        x, y4 = self.down1(self.d4(x))
+        x = self.bottom(x)
+        x = self.u4(self.up4(x, y4))
+        x = self.u3(self.up3(x, y3))
+        x = self.u2(self.up2(x, y2))
+        x = self.u1(self.up1(x, y1))
+        x1 = self.outconv(x)
+        #         xm1 = self.outconvm1(x)
+        #         xp1 = self.outconvp1(x)
+        x1 = F.softmax(x1,dim=1)
+        return x1
+# =========================================================
+
+if __name__ == '__main__':
+    net = Dense_Unet(3,21,128).cuda()
+    print(net)
+    in1 = torch.randn(4,3,224,224).cuda()
+    out = net(in1)
+    print(out.size())
 
 if __name__ == '__main__':
     # test network forward

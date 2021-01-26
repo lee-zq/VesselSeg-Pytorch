@@ -52,7 +52,7 @@ class Upsample_n_Concat(nn.Module):
 
 
 class Dense_Unet(nn.Module):
-    def __init__(self, in_chan=3,out_chan=2,filters=128, num_conv=4):
+    def __init__(self, in_chan=1,out_chan=2,filters=128, num_conv=4):
 
         super(Dense_Unet, self).__init__()
         self.conv1 = nn.Conv2d(in_chan, filters, 1)
@@ -92,7 +92,7 @@ class Dense_Unet(nn.Module):
         x1 = self.outconv(x)
         #         xm1 = self.outconvm1(x)
         #         xp1 = self.outconvp1(x)
-        x1 = F.log_softmax(x1,dim=1)
+        x1 = F.softmax(x1,dim=1)
         return x1
 
 if __name__ == '__main__':

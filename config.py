@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--train_patch_height', default=64)
     parser.add_argument('--train_patch_width', default=64)
     parser.add_argument('--N_patches', default=100000)
-    parser.add_argument('--inside_FOV', default=True)
+    parser.add_argument('--inside_FOV', default='center',help='Choose from [not,center,all]')
     parser.add_argument('--val_ratio', default=0.1)
     # model parameters
     parser.add_argument('--in_channels', default=1,
@@ -37,7 +37,7 @@ def parse_args():
                         help='early stopping')
     parser.add_argument('--lr', default=0.0005, type=float,
                         help='initial learning rate')
-    parser.add_argument('--val_on_test', default=True, type=bool,
+    parser.add_argument('--val_on_test', default=False, type=bool,
                         help='Validation on testset')
 
     # for pre_trained checkpoint

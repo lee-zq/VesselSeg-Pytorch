@@ -3,28 +3,25 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import f1_score
-# help_functions.py
+
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
 params = {'legend.fontsize': 13,
          'axes.labelsize': 15,
          'axes.titlesize':15,
          'xtick.labelsize':15,
-         'ytick.labelsize':15} # define pyplot parameters
+         'ytick.labelsize':15} 
 pylab.rcParams.update(params)
-#Area under the ROC curve
 import os
 import torch
 from os.path import join
 from collections import OrderedDict
 import numpy as np
 
-result_list = {"d_base":'/ssd/lzq/sf3/output/db1_new/result.npy',
-               "d_ra":'/ssd/lzq/sf3/output/d_ra/result.npy',
-               "d_meca":'/ssd/lzq/sf3/output/d_meca/result.npy',
-               "d_uf":'/ssd/lzq/sf3/output/d_uf/result.npy',
-               "d_total":'/ssd/lzq/sf3/output/d_total/result.npy'}
-save_path = '/ssd/lzq/sf3/output/Drive_ablation'
+result_list = {"d_base":'./experiments/db1_new/result.npy',
+               "d_up1":'./experiments/d_up1/result.npy',
+               "d_total":'./experiments/d_total/result.npy'}
+save_path = './experiments/Drive_ablation'
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 # ===============AUC ROC===============

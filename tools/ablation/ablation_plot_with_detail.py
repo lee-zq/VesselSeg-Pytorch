@@ -20,12 +20,10 @@ params = {'legend.fontsize': 12,
 pylab.rcParams.update(params)
 #Area under the ROC curve
 
-result_list = {"Baseline":('/ssd/lzq/sf3/output/db1_new/result.npy','--'),
-               "Baseline+RA":('/ssd/lzq/sf3/output/d_ra/result.npy','-.'),
-               "Baseline+UF":('/ssd/lzq/sf3/output/d_uf/result.npy',':'),
-               "Baseline+MECA":('/ssd/lzq/sf3/output/d_meca/result.npy',(0, (3, 1, 1, 1))),
-               "ECU-Net":('/ssd/lzq/sf3/output/d_total/result.npy','-')}
-save_path = '/ssd/lzq/sf3/output/Drive_ablation'
+result_list = {"d_base":'./experiments/db1_new/result.npy',
+               "d_up1":'./experiments/d_up1/result.npy',
+               "d_total":'./experiments/d_total/result.npy'}
+save_path = './experiments/Drive_ablation'
 
 if not os.path.exists(save_path): os.makedirs(save_path)
 

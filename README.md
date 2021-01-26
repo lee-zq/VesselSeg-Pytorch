@@ -109,7 +109,7 @@ DRIVE:
 STARE:   
 ![results stare](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1ewrd5luj225s0gt4mc.jpg)  
 CHASE_DB1:   
-![results chasedb1](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
+![results chasedb1](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1fqwmy8dj23300qo7wh.jpg)  
   
 ## To DO
  * [ ] Add other retinal vessel segmentation models and performances.

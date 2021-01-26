@@ -102,9 +102,13 @@ The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` 
 ## Visualization
 0. Training sample visualization  
 ![train data](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1710u3s4j20hg06y0tt.jpg)  
-1. Segmentation results (the original image, predicted probability image, predicted binary image and groundtruth)  
+1. Segmentation results   
+ The original image, predicted probability image, predicted binary image and groundtruth  
+ DRIVE:
 ![results drive3](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16yw1u1qj21qs0g8tou.jpg)   
+  CHASE:
 ![results drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
+CHASE_DB1:
 ![results drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
 2. ROC Curve and PR Curve  
 ![roc drive6](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn1740h9h1j20hs0dct9c.jpg)

@@ -101,6 +101,7 @@ The above command loads the `best_model.pth` in `./experiments/UNet_vessel_seg` 
 
 ## Visualization of results
 1. Segmentation results (the original image, segmentation probability map, segmentation binary image, groundtruth)  
-![Segmentation results](https://github.com/lee-zq/VesselSeg-Pytorch/blob/master/figures/img_prob_bin_gt_01_test.png)
+![Segmentation results](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16jnugz6j20ri08w465.jpg)
 2. ROC Curve and PR Curve
+
 ## Others

@@ -9,6 +9,7 @@ from sklearn.metrics import f1_score
 import os
 import torch
 from os.path import join
+import numpy as np
 from collections import OrderedDict
 import matplotlib.pylab as pylab
 params = {'legend.fontsize': 13,

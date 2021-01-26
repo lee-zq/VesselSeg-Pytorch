@@ -5,8 +5,9 @@ experiments/*
 !experiments/README.md
 !experiments/Example
 
-tools/ablation
-tools/visualization
+tools/ablation/*
+tools/visualization/*
+
 .vscode/
 
 # Byte-compiled / optimized / DLL files

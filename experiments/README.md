@@ -1,3 +1,5 @@
+All experiments are saved in the `./experiments` folder and saved separately according to the name.   
+The directory structure of each experiment is as follows:
 ``` 
 ├── experiments    		       # Experiment results folder
 │   ├── Example          # An experiment
@@ -17,3 +19,4 @@
 │        ├── test_log.txt		    # Training process log
 │        └── train_log.txt		    # Test process log
 ```
+PS: The `./experiments/Example` is just an example, which `best_model.pth`、`latest_model.pth` and `result.npy` are empty files and cannot be used directly. You need to retrain the model.

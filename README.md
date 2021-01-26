@@ -112,8 +112,7 @@ CHASE_DB1:
 ![results chasedb1](http://ww1.sinaimg.cn/mw690/a2d5ce76ly1gn16zbiob1j21qs0g8qlw.jpg)  
 2. ROC Curve and PR Curve  
 ![roc drive6](http://ww1.sinaimg.cn/thumbnail/a2d5ce76ly1gn186q8zzpj20hs0dct9c.jpg)
-![pr drive6](http://ww1.sinaimg.cn/thumbnail/a2d5ce76ly1gn174q0dguj20hs0dcaam.jpg)  
-## Others  
+![pr drive6](http://ww1.sinaimg.cn/thumbnail/a2d5ce76ly1gn174q0dguj20hs0dcaam.jpg)   
 ## To DO
  * [ ] Add other retinal vessel segmentation models and performances.
  * [ ] Add SOTA loss function.

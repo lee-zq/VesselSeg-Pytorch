@@ -13,12 +13,12 @@ def parse_args():
 
     # data
     parser.add_argument('--train_data_path_list',
-                        default='./prepare_dataset/data_path_list/DRIVE/train.txt')
+                        default='./prepare_dataset/data_path_list/STARE/train.txt')
     parser.add_argument('--test_data_path_list',
-                        default='./prepare_dataset/data_path_list/DRIVE/test.txt')
+                        default='./prepare_dataset/data_path_list/STARE/test.txt')
     parser.add_argument('--train_patch_height', default=64,)
     parser.add_argument('--train_patch_width', default=64)
-    parser.add_argument('--N_patches', default=100000,
+    parser.add_argument('--N_patches', default=200000,
                         help='Number of training image patches')
     parser.add_argument('--inside_FOV', default='center',
                         help='Choose from [not,center,all]')
@@ -39,7 +39,7 @@ def parse_args():
                         help='early stopping')
     parser.add_argument('--lr', default=0.0005, type=float,
                         help='initial learning rate')
-    parser.add_argument('--val_on_test', default=False, type=bool,
+    parser.add_argument('--val_on_test', default=True, type=bool,
                         help='Validation on testset')
 
     # for pre_trained checkpoint

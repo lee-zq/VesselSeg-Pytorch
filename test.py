@@ -81,7 +81,7 @@ class Test():
         # self.test_imgs = my_PreProc(self.test_imgs) # Uncomment to save the pre processed image
         for i in range(self.test_imgs.shape[0]):
             total_img = concat_result(self.test_imgs[i],self.pred_imgs[i],self.test_masks[i])
-            visualize(total_img,join(self.save_img_path, "Result_"+img_name_list[i]+'.png'))
+            save_img(total_img,join(self.save_img_path, "Result_"+img_name_list[i]+'.png'))
 
     # Val on the test set at each epoch
     def val(self):
@@ -109,8 +109,8 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
 
-    net = models.UNetFamily.Dense_Unet(1,2).to(device)
-    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
+    # net = models.UNetFamily.Dense_Unet(1,2).to(device)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     cudnn.benchmark = True
 
     # Load checkpoint

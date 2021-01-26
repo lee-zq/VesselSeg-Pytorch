@@ -99,8 +99,7 @@ def main():
     print('The computing device used is: ','GPU' if device.type=='cuda' else 'CPU')
     
     # net = models.UNetFamily.U_Net(1,2).to(device)
-    # net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
-    net = models.Dense_Unet(in_chan=1, out_chan=2).to(device)
+    net = models.LadderNet(inplanes=1, num_classes=2, layers=3, filters=16).to(device)
     print("Total number of parameters: " + str(count_parameters(net)))
 
     log.save_graph(net,torch.randn((1,1,48,48)).to(device).to(device=device))  # Save the model structure to the tensorboard file

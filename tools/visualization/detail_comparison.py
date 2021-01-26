@@ -35,7 +35,7 @@ def crop_and_resize(img,center,crop_length,target_shape):
 if __name__ == "__main__":
     result = readImg('/ssd/lzq/sf3/output/s_3/result_img/Original_GroundTruth_Prediction2.png')
     ori_img = readImg('/ssd/lzq/sf3/data/STARE/images/im0081.ppm')
-    save_path = '/ssd/lzq/sf3/visualization'
+    save_path = '/ssd/lzq/sf3/result_detail_visualization'
     w0 = 580
     h0 = 360
     block = 90

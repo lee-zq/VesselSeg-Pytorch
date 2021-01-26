@@ -1,6 +1,6 @@
 ``` 
 ├── experiments    		       # Experiment results folder
-│   ├── UNet_vessel_seg          # An experiment
+│   ├── Example          # An experiment
 │        ├── args.pkl			    # Saved configuration file (pkl format)
 │        ├── args.txt			    # Saved configuration file (txt format)
 │        ├── best_model.pth 		# Best performance model saved

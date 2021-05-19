@@ -14,7 +14,7 @@ def parse_args():
                         default='./prepare_dataset/data_path_list/DRIVE/train.txt')
     parser.add_argument('--test_data_path_list',
                         default='./prepare_dataset/data_path_list/DRIVE/test.txt')
-    parser.add_argument('--train_patch_height', default=64,)
+    parser.add_argument('--train_patch_height', default=64)
     parser.add_argument('--train_patch_width', default=64)
     parser.add_argument('--N_patches', default=200000,
                         help='Number of training image patches')
@@ -22,6 +22,8 @@ def parse_args():
                         help='Choose from [not,center,all]')
     parser.add_argument('--val_ratio', default=0.1,
                         help='The ratio of the validation set in the training set')
+    parser.add_argument('--sample_visualization', default=True,
+                        help='Visualization of training samples')
     # model parameters
     parser.add_argument('--in_channels', default=1,type=int,
                         help='input channels of model')

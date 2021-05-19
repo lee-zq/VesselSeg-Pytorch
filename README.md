@@ -35,13 +35,14 @@ VesselSeg-Pytorch			# Source code
     ├── lib			            # Function library
     │   ├── common.py
     │   ├── dataset.py		        # Dataset class to load training data
+    │   ├── datasetV2.py		        # Dataset class to load training data with lower memory
     │   ├── extract_patches.py		# Extract training and test samples
     │   ├── help_functions.py		# 
     │   ├── __init__.py
     │   ├── logger.py 		        # To create log
     │   ├── losses
     │   ├── metrics.py		        # Evaluation metrics
-    │   ├── pre_processing.py		# Data preprocessing
+    │   └── pre_processing.py		# Data preprocessing
     ├── models		        # All models are created in this folder
     │   ├── denseunet.py
     │   ├── __init__.py
@@ -50,16 +51,17 @@ VesselSeg-Pytorch			# Source code
     │   └── UNetFamily.py
     ├── prepare_dataset	        # Prepare the dataset (organize the image path of the dataset)
     │   ├── chasedb1.py
-    │   ├── data_path_list		# image path of dataset
+    │   ├── data_path_list		  # image path of dataset
     │   ├── drive.py
     │   └── stare.py
-    ├── test.py			            # Test file
     ├── tools			     # some tools
     │   ├── ablation_plot.py
     │   ├── ablation_plot_with_detail.py
     │   ├── merge_k-flod_plot.py
     │   └── visualization
-    └── train.py			        # Train file
+    ├── function.py			        # Creating dataloader, training and validation functions 
+    ├── test.py			            # Test file
+    └── train.py			          # Train file
 ```
 ### 1) Datasets preparation 
 1. Please download the retina image datasets(DRIVE, STARE and CHASE_DB1) from [TianYi Cloud](https://cloud.189.cn/t/UJrmYrFZBzIn). Otherwise, you can download three data sets from the official address: [DRIVE](http://www.isi.uu.nl/Research/Databases/DRIVE/),[STARE](http://www.ces.clemson.edu/ahoover/stare/) and [CHASE_DB1]().  

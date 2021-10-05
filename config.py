@@ -11,12 +11,12 @@ def parse_args():
 
     # data
     parser.add_argument('--train_data_path_list',
-                        default='./prepare_dataset/data_path_list/DRIVE/train.txt')
+                        default='./prepare_dataset/data_path_list/STARE/train.txt')
     parser.add_argument('--test_data_path_list',
-                        default='./prepare_dataset/data_path_list/DRIVE/test.txt')
+                        default='./prepare_dataset/data_path_list/STARE/test.txt')
     parser.add_argument('--train_patch_height', default=64)
     parser.add_argument('--train_patch_width', default=64)
-    parser.add_argument('--N_patches', default=200000,
+    parser.add_argument('--N_patches', default=30000,
                         help='Number of training image patches')
     parser.add_argument('--inside_FOV', default='center',
                         help='Choose from [not,center,all]')

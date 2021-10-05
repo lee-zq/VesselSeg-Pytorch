@@ -59,11 +59,11 @@ def get_dataloaderV2(args):
 
     train_set = TrainDatasetV2(imgs_train, masks_train, fovs_train,train_idx,mode="train",args=args)
     train_loader = DataLoader(train_set, batch_size=args.batch_size,
-                              shuffle=True, num_workers=6)
+                              shuffle=True, num_workers=0)
 
     val_set = TrainDatasetV2(imgs_train, masks_train, fovs_train,val_idx,mode="val",args=args)
     val_loader = DataLoader(val_set, batch_size=args.batch_size,
-                            shuffle=False, num_workers=6)
+                            shuffle=False, num_workers=0)
 
     # Save some samples of feeding to the neural network
     if args.sample_visualization:

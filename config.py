@@ -16,7 +16,7 @@ def parse_args():
                         default='./prepare_dataset/data_path_list/STARE/test.txt')
     parser.add_argument('--train_patch_height', default=64)
     parser.add_argument('--train_patch_width', default=64)
-    parser.add_argument('--N_patches', default=30000,
+    parser.add_argument('--N_patches', default=150000,
                         help='Number of training image patches')
     parser.add_argument('--inside_FOV', default='center',
                         help='Choose from [not,center,all]')

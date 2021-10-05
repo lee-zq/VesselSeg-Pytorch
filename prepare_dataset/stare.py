@@ -24,7 +24,7 @@ def write_path_list(name_list, save_path, file_name):
 
 if __name__ == "__main__":
     #------------Path of the dataset --------------------------------
-    data_root_path = r'D:\Files\MyCode\datasets'
+    data_root_path = '/ssd/lzq/projects/vesselseg/data'
     # if not os.path.exists(data_root_path): raise ValueError("data path is not exist, Please make sure your data path is correct")
     #train
     img = "STARE/images"

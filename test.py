@@ -72,7 +72,7 @@ class Test():
     # save segmentation imgs
     def save_segmentation_result(self):
         img_path_list, _, _ = load_file_path_txt(self.args.test_data_path_list)
-        img_name_list = [item.split('\\')[-1].split('.')[0] for item in img_path_list]
+        img_name_list = [item.split('/')[-1].split('.')[0] for item in img_path_list]
 
         kill_border(self.pred_imgs, self.test_FOVs) # only for visualization
         self.save_img_path = join(self.path_experiment,'result_img')

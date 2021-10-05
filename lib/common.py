@@ -13,10 +13,8 @@ def readImg(img_path):
     """
     img_format = img_path.split(".")[-1]
     try:
-        if 0: #img_format=="tif format":      #在win下读取tif格式图像在转np的时候异常终止，
-            img = imageio.read(img_path)      #暂时没找到合适的读取方式，Linux下直接用PIl读取无问题
-        else:
-            img = PIL.Image.open(img_path) 
+        #在win下读取tif格式图像在转np的时候异常终止，暂时没找到合适的读取方式，Linux下直接用PIl读取无问题
+        img = PIL.Image.open(img_path) 
     except Exception as e:
         ValueError("Reading failed, please check path of dataset,",img_path)
     return img
